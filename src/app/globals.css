@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fonts dari public/fonts */
+@font-face {
+  font-family: "Barlow Bold";
+  src: url("/fonts/barlow-bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Barlow Tipis";
+  src: url("/fonts/barlow-tipis.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Monterat Italic";
+  src: url("/fonts/monterat-italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Monterat Tipis";
+  src: url("/fonts/monterat-tipis.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Mobile-first base */
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  @apply antialiased text-gray-900 bg-gray-50 font-monterat-tipis;
+}

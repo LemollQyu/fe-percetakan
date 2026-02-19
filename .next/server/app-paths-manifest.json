@@ -1,0 +1,5 @@
+{
+  "/(main)/page": "app/(main)/page.js",
+  "/(main)/profile/page": "app/(main)/profile/page.js",
+  "/(main)/riwayat-order/page": "app/(main)/riwayat-order/page.js"
+}
