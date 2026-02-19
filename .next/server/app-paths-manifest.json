@@ -1,5 +1,7 @@
 {
-  "/(main)/page": "app/(main)/page.js",
-  "/(main)/profile/page": "app/(main)/profile/page.js",
-  "/(main)/riwayat-order/page": "app/(main)/riwayat-order/page.js"
+  "/(main)/category/[slug]/page": "app/(main)/category/[slug]/page.js",
+  "/(main)/category/[slug]/service/[id]/page": "app/(main)/category/[slug]/service/[id]/page.js",
+  "/auth/login/page": "app/auth/login/page.js",
+  "/admin/dashboard/services/page": "app/admin/dashboard/services/page.js",
+  "/(main)/profile/page": "app/(main)/profile/page.js"
 }

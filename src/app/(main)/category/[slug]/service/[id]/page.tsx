@@ -10,13 +10,13 @@ import type {
   ServiceSpesification,
   ServiceSpesificationValue,
 } from "@/api/jasa/services";
+import { getToken, getAuthRole } from "@/lib/auth";
 
 function normalizeMediaUrl(url: string): string {
   if (!url || typeof url !== "string") return url;
   let t = url.trim();
   if (!t) return t;
 
-  // Jika URL absolut mengandung /static/, gunakan path relatif agar kena rewrite Next.js
   if (t.startsWith("http://") || t.startsWith("https://")) {
     const staticIndex = t.indexOf("/static/");
     if (staticIndex !== -1) return t.substring(staticIndex);
@@ -58,7 +58,6 @@ function parseSelectOptions(options: unknown): string[] {
       const parsed = JSON.parse(t) as unknown;
       return parseSelectOptions(parsed);
     } catch {
-      // fallback: comma separated
       return t
         .split(",")
         .map((s) => s.trim())
@@ -118,16 +117,18 @@ function SpecItem({
   onToggle,
   state,
   onChange,
+  onConfirm,
 }: {
   spec: ServiceSpesification;
   open: boolean;
   onToggle: () => void;
   state: SpecInputState | undefined;
   onChange: (next: SpecInputState) => void;
+  onConfirm: (next: SpecInputState) => void;
 }) {
   const { ref: innerRef, height } = useMeasuredHeight<HTMLDivElement>();
 
-  const [confirmedNumber, setConfirmedNumber] = useState<string>("");
+  const [textConfirmed, setTextConfirmed] = useState(false);
   const [numberConfirmed, setNumberConfirmed] = useState(false);
   const inputType = String(spec.input_type || "").toLowerCase();
   const isSelect = inputType === "select";
@@ -215,6 +216,14 @@ function SpecItem({
             </span>
           ) : null}
 
+          {spec.input_type === "text" &&
+          textConfirmed &&
+          textState.value !== "" ? (
+            <span className="font-monterat-tipis text-[11px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 text-stone-700">
+              {textState.value}
+            </span>
+          ) : null}
+
           <svg
             className={`w-4 h-4 text-stone-600 transition-transform duration-300 ${open ? "rotate-180" : "rotate-0"}`}
             fill="none"
@@ -242,7 +251,6 @@ function SpecItem({
       >
         <div ref={innerRef} className="px-3 pb-3">
           <div className="pt-2.5 border-t border-stone-100">
-            {/* Input sesuai type */}
             {isSelect && (
               <div className="space-y-2">
                 <label className="font-monterat-tipis block text-[12px] font-semibold text-stone-700">
@@ -276,34 +284,8 @@ function SpecItem({
                       );
                     })}
                   </select>
-                  {/* Tampilan value & price di kanan dropdown saat dropdown tertutup */}
-                  {/* <div className="font-monterat-tipis min-w-[120px] flex flex-col justify-center rounded-xl border border-stone-200 bg-stone-100/80 px-4 py-2">
-                    {selectState.value ? (
-                      <>
-                        <span
-                          className="text-[13px] font-semibold text-stone-800 truncate"
-                          title={selectState.value}
-                        >
-                          {selectState.value}
-                        </span>
-                        {typeof valuePriceMap.get(selectState.value) ===
-                          "number" && (
-                          <span className="text-[12px] font-medium text-stone-600">
-                            {Number(valuePriceMap.get(selectState.value)) > 0
-                              ? `+${formatRupiah(Number(valuePriceMap.get(selectState.value)))}`
-                              : formatRupiah(
-                                  Number(valuePriceMap.get(selectState.value)),
-                                )}
-                          </span>
-                        )}
-                      </>
-                    ) : (
-                      <span className="text-[12px] text-stone-400">—</span>
-                    )}
-                  </div> */}
                 </div>
 
-                {/* Harga per value (tidak muncul untuk text/number) */}
                 {(spec.spesification_value ?? []).length > 0 && (
                   <div className="rounded-xl border border-stone-100 bg-stone-50/50 p-3">
                     <p className="font-barlow-bold text-[12px] font-semibold text-stone-800 mb-2">
@@ -385,15 +367,25 @@ function SpecItem({
                     <span className="text-red-500"> *</span>
                   ) : null}
                 </label>
-                <input
-                  type="text"
-                  value={textState.value}
-                  onChange={(e) =>
-                    onChange({ type: "text", value: e.target.value })
-                  }
-                  placeholder={`Masukkan ${spec.name.toLowerCase()}`}
-                  className="font-monterat-tipis w-full min-h-[44px] rounded-xl border border-stone-200 bg-stone-50/80 px-4 text-[15px] font-medium text-stone-900 placeholder-stone-400 focus:bg-white focus:border-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-200/80"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={textState.value}
+                    onChange={(e) => {
+                      setTextConfirmed(false);
+                      onChange({ type: "text", value: e.target.value });
+                    }}
+                    placeholder={`Masukkan ${spec.name.toLowerCase()}`}
+                    className="font-monterat-tipis w-full min-h-[44px] rounded-xl border border-stone-200 bg-stone-50/80 pl-4 pr-16 text-[15px] font-medium text-stone-900 placeholder-stone-400 focus:bg-white focus:border-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-200/80"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setTextConfirmed(true)}
+                    className="font-monterat-tipis absolute right-1.5 top-1/2 -translate-y-1/2 h-8 px-3 rounded-lg bg-stone-900 text-white text-[12px] font-semibold hover:bg-stone-700 active:scale-95 transition-all"
+                  >
+                    Oke
+                  </button>
+                </div>
               </div>
             )}
 
@@ -413,13 +405,17 @@ function SpecItem({
                     onChange={(e) => {
                       setNumberConfirmed(false);
                       onChange({ type: "number", value: e.target.value });
+                      onConfirm({ type: "number", value: "" });
                     }}
                     placeholder={`Masukkan ${spec.name.toLowerCase()}`}
                     className="font-monterat-tipis w-full min-h-[44px] rounded-xl border border-stone-200 bg-stone-50/80 pl-4 pr-16 text-[15px] font-medium text-stone-900 placeholder-stone-400 focus:bg-white focus:border-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-200/80"
                   />
                   <button
                     type="button"
-                    onClick={() => setNumberConfirmed(true)}
+                    onClick={() => {
+                      setNumberConfirmed(true);
+                      onConfirm({ type: "number", value: numberState.value });
+                    }}
                     className="font-monterat-tipis absolute right-1.5 top-1/2 -translate-y-1/2 h-8 px-3 rounded-lg bg-stone-900 text-white text-[12px] font-semibold hover:bg-stone-700 active:scale-95 transition-all"
                   >
                     Oke
@@ -438,8 +434,16 @@ export default function ServiceDetailPage() {
   const params = useParams();
   const slug = params?.slug as string;
   const id = Number(params?.id);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const [orderSheetOpen, setOrderSheetOpen] = useState(false);
+  const [confirmedInputs, setConfirmedInputs] = useState<
+    Record<number, SpecInputState>
+  >({});
+
+  const [orderNote, setOrderNote] = useState("");
+  const [confirmedQty, setConfirmedQty] = useState(1);
+  const [tempQty, setTempQty] = useState("1");
 
   const [service, setService] = useState<ServiceJasa | null>(null);
   const [loading, setLoading] = useState(true);
@@ -451,6 +455,12 @@ export default function ServiceDetailPage() {
   const [specInputs, setSpecInputs] = useState<Record<number, SpecInputState>>(
     {},
   );
+
+  useEffect(() => {
+    const token = getToken();
+    const role = getAuthRole();
+    setIsLoggedIn(!!token && role === "user");
+  }, []);
 
   useEffect(() => {
     if (!id || Number.isNaN(id)) {
@@ -500,10 +510,7 @@ export default function ServiceDetailPage() {
     const thumbnails = list.filter(
       (m) => String(m.type).toLowerCase() === "thumbnail",
     );
-    return {
-      galleries,
-      thumbnails,
-    };
+    return { galleries, thumbnails };
   }, [service?.media]);
 
   const allImages = useMemo(() => {
@@ -520,6 +527,16 @@ export default function ServiceDetailPage() {
   const currentImage = activeUrl ?? allImages[0] ?? null;
   const currentIndex = currentImage ? allImages.indexOf(currentImage) : -1;
   const safeIndex = currentIndex >= 0 ? currentIndex : 0;
+
+  const mergedInputs = useMemo(() => {
+    const result: Record<number, SpecInputState> = { ...specInputs };
+    Object.entries(confirmedInputs).forEach(([key, val]) => {
+      if (val.type === "number") {
+        result[Number(key)] = val;
+      }
+    });
+    return result;
+  }, [specInputs, confirmedInputs]);
 
   if (loading) {
     return (
@@ -562,6 +579,12 @@ export default function ServiceDetailPage() {
     );
   }
 
+  const subtotalPerUnit = calcOrder(
+    Number(service.base_price ?? 0),
+    service.spesification ?? [],
+    mergedInputs,
+  ).subtotalBeforeQty;
+
   return (
     <main className="flex-1 w-full max-w-[430px] mx-auto px-4 py-6 pb-24">
       <div className="space-y-6">
@@ -598,10 +621,9 @@ export default function ServiceDetailPage() {
           </div>
         </div>
 
-        {/* Media layout: gallery (kiri), main, thumbnail (bawah) */}
+        {/* Media layout */}
         <section className="rounded-2xl bg-white border border-stone-100 shadow-lg shadow-stone-200/30 p-4">
           <div className="flex flex-row gap-3">
-            {/* List gallery: atas ke bawah (type=gallery) */}
             <div className="flex flex-col gap-2 w-14">
               {media.galleries.map((m) => {
                 const url = m.url ? normalizeMediaUrl(m.url) : "";
@@ -629,7 +651,6 @@ export default function ServiceDetailPage() {
               })}
             </div>
 
-            {/* Main image */}
             <div className="flex-1">
               <div className="relative w-full aspect-[1/1] rounded-2xl overflow-hidden bg-stone-100 border border-stone-200">
                 {currentImage ? (
@@ -646,7 +667,6 @@ export default function ServiceDetailPage() {
                   </div>
                 )}
 
-                {/* Dot navigation di atas gambar, jumlah sesuai semua media */}
                 {allImages.length > 1 && (
                   <div className="absolute bottom-2 left-3 flex items-center gap-1.5 bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm">
                     {allImages.map((url, idx) => {
@@ -669,7 +689,6 @@ export default function ServiceDetailPage() {
                 )}
               </div>
 
-              {/* Thumbnails bawah: kiri ke kanan (type=thumbnail) */}
               {media.thumbnails.length > 0 && (
                 <div className="mt-3 flex flex-row gap-2 overflow-x-auto pb-1">
                   {media.thumbnails.map((m) => {
@@ -747,29 +766,91 @@ export default function ServiceDetailPage() {
                         onChange={(next) =>
                           setSpecInputs((p) => ({ ...p, [spec.id]: next }))
                         }
+                        onConfirm={(next) =>
+                          setConfirmedInputs((p) => ({ ...p, [spec.id]: next }))
+                        }
                       />
                     ))}
                 </ul>
               </div>
             )}
         </section>
+
+        {/* Note & Quantity */}
+        <div className="rounded-2xl bg-white border border-stone-100 shadow-sm shadow-stone-200/30 p-4 space-y-4">
+          {/* Note */}
+          <div className="space-y-1.5">
+            <label className="font-barlow-bold text-sm font-semibold text-stone-900">
+              Pesan / Catatan
+            </label>
+            <textarea
+              value={orderNote}
+              onChange={(e) => setOrderNote(e.target.value)}
+              placeholder="Tulis catatan atau pesan untuk penjual..."
+              rows={3}
+              className="font-monterat-tipis w-full rounded-xl border border-stone-200 bg-stone-50/80 px-4 py-3 text-[14px] font-medium text-stone-900 placeholder-stone-400 focus:bg-white focus:border-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-200/80 resize-none"
+            />
+          </div>
+
+          {/* Quantity */}
+          <div className="space-y-1.5">
+            <label className="font-barlow-bold text-sm font-semibold text-stone-900">
+              Jumlah
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                inputMode="numeric"
+                min={1}
+                value={tempQty}
+                onChange={(e) => setTempQty(e.target.value)}
+                className="font-monterat-tipis w-full min-h-[44px] rounded-xl border border-stone-200 bg-stone-50/80 pl-4 pr-16 text-[15px] font-medium text-stone-900 placeholder-stone-400 focus:bg-white focus:border-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-200/80"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const val = Math.max(1, Number(tempQty) || 1);
+                  setTempQty(String(val));
+                  setConfirmedQty(val);
+                }}
+                className="font-monterat-tipis absolute right-1.5 top-1/2 -translate-y-1/2 h-8 px-3 rounded-lg bg-stone-900 text-white text-[12px] font-semibold hover:bg-stone-700 active:scale-95 transition-all"
+              >
+                Oke
+              </button>
+            </div>
+            {confirmedQty > 1 && (
+              <p className="font-monterat-tipis text-[11px] text-stone-500 px-1">
+                {formatRupiah(subtotalPerUnit)} × {confirmedQty} ={" "}
+                {formatRupiah(subtotalPerUnit * confirmedQty)}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
+
       {service && (
         <>
           <FloatingOrderButton
             basePrice={Number(service.base_price ?? 0)}
             specifications={service.spesification ?? []}
-            specInputs={specInputs}
+            specInputs={mergedInputs}
+            isLoggedIn={isLoggedIn}
+            qty={confirmedQty}
+            note={orderNote}
             onClick={() => setOrderSheetOpen(true)}
           />
-          <OrderSummarySheet
-            open={orderSheetOpen}
-            onClose={() => setOrderSheetOpen(false)}
-            serviceName={service.name}
-            basePrice={Number(service.base_price ?? 0)}
-            specifications={service.spesification ?? []}
-            specInputs={specInputs}
-          />
+          {isLoggedIn && (
+            <OrderSummarySheet
+              open={orderSheetOpen}
+              onClose={() => setOrderSheetOpen(false)}
+              serviceName={service.name}
+              basePrice={Number(service.base_price ?? 0)}
+              specifications={service.spesification ?? []}
+              qty={confirmedQty}
+              note={orderNote}
+              specInputs={mergedInputs}
+            />
+          )}
         </>
       )}
     </main>
@@ -777,7 +858,7 @@ export default function ServiceDetailPage() {
 }
 
 // ============================================================
-// OrderSummarySheet Component
+// Kalkulasi terpusat
 // ============================================================
 
 interface OrderItem {
@@ -786,11 +867,94 @@ interface OrderItem {
   additionalPrice: number;
 }
 
+interface CalcResult {
+  orderItems: OrderItem[];
+  totalAdditional: number;
+  subtotalBeforeQty: number;
+  grandTotal: number;
+}
+
+function calcOrder(
+  basePrice: number,
+  specifications: ServiceSpesification[],
+  specInputs: Record<number, SpecInputState>,
+): CalcResult {
+  const orderItems: OrderItem[] = [];
+  let totalAdditional = 0;
+
+  specifications
+    .filter((s) => s.is_active)
+    .forEach((spec) => {
+      const state = specInputs[spec.id];
+      if (!state) return;
+
+      const inputType = String(spec.input_type || "").toLowerCase();
+      const valuePriceMap = buildValuePriceMap(spec.spesification_value);
+
+      if (inputType === "select" && state.type === "select" && state.value) {
+        const addPrice = Number(valuePriceMap.get(state.value) ?? 0);
+        totalAdditional += addPrice;
+        orderItems.push({
+          specName: spec.name,
+          displayValue: state.value,
+          additionalPrice: addPrice,
+        });
+      } else if (
+        inputType === "boolean" &&
+        state.type === "boolean" &&
+        state.checked
+      ) {
+        const addPrice = Number(
+          spec.spesification_value?.[0]?.additional_price ?? 0,
+        );
+        totalAdditional += addPrice;
+        orderItems.push({
+          specName: spec.name,
+          displayValue: "Ya",
+          additionalPrice: addPrice,
+        });
+      } else if (inputType === "text" && state.type === "text" && state.value) {
+        orderItems.push({
+          specName: spec.name,
+          displayValue: state.value,
+          additionalPrice: 0,
+        });
+      } else if (
+        inputType === "number" &&
+        state.type === "number" &&
+        state.value
+      ) {
+        // number spec → tampilkan sebagai info di ringkasan, tidak mengalikan
+        orderItems.push({
+          specName: spec.name,
+          displayValue: state.value,
+          additionalPrice: 0,
+        });
+      }
+    });
+
+  const subtotalBeforeQty = basePrice + totalAdditional;
+  const grandTotal = subtotalBeforeQty; // qty dihitung di luar
+
+  return {
+    orderItems,
+    totalAdditional,
+    subtotalBeforeQty,
+    grandTotal,
+  };
+}
+
+// ============================================================
+// OrderSummarySheet
+// ============================================================
+
 interface OrderSummarySheetProps {
   open: boolean;
   onClose: () => void;
   serviceName: string;
   basePrice: number;
+  qty: number;
+  note: string;
   specifications: ServiceSpesification[];
   specInputs: Record<number, SpecInputState>;
 }
@@ -802,6 +966,8 @@ function OrderSummarySheet({
   basePrice,
   specifications,
   specInputs,
+  note,
+  qty,
 }: OrderSummarySheetProps) {
   const sheetRef = useRef<HTMLDivElement>(null);
   const [rendered, setRendered] = useState(false);
@@ -826,10 +992,13 @@ function OrderSummarySheet({
     }
   };
 
-  const { orderItems, subtotalBeforeQty, qtySpecName, qtyValue, grandTotal } =
-    calcOrder(basePrice, specifications, specInputs);
-
-  const hasQty = qtyValue > 0;
+  const { subtotalBeforeQty, orderItems } = calcOrder(
+    basePrice,
+    specifications,
+    specInputs,
+  );
+  const grandTotal = subtotalBeforeQty * qty;
+  const hasQty = qty > 1;
 
   if (!rendered) return null;
 
@@ -922,7 +1091,7 @@ function OrderSummarySheet({
             </span>
           </div>
 
-          {/* Spesifikasi (select + boolean + text) */}
+          {/* Spesifikasi */}
           {orderItems.length > 0 && (
             <div className="space-y-2">
               <p className="font-barlow-bold text-[11px] font-semibold text-stone-500 uppercase tracking-wider px-1">
@@ -964,8 +1133,20 @@ function OrderSummarySheet({
             </div>
           )}
 
+          {/* Catatan */}
+          {note && (
+            <div className="rounded-xl border border-stone-100 bg-stone-50 p-3">
+              <p className="font-barlow-bold text-[11px] font-semibold text-stone-500 uppercase tracking-wider mb-1">
+                Catatan
+              </p>
+              <p className="font-monterat-tipis text-[13px] text-stone-700">
+                {note}
+              </p>
+            </div>
+          )}
+
           {/* Kosong */}
-          {orderItems.length === 0 && !hasQty && (
+          {orderItems.length === 0 && !note && !hasQty && (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <div className="w-12 h-12 rounded-2xl bg-stone-100 flex items-center justify-center mb-3">
                 <svg
@@ -988,9 +1169,8 @@ function OrderSummarySheet({
             </div>
           )}
 
-          {/* Baris perkalian — ditampilkan sebelum grand total */}
+          {/* Kalkulasi total */}
           <div className="pt-1 space-y-2 border-t border-dashed border-stone-200">
-            {/* Subtotal per unit */}
             <div className="flex items-center justify-between px-1 pt-2">
               <span className="font-monterat-tipis text-[12px] text-stone-500">
                 Subtotal (per unit)
@@ -1000,23 +1180,21 @@ function OrderSummarySheet({
               </span>
             </div>
 
-            {/* Jumlah (type number) */}
             {hasQty && (
               <div className="flex items-center justify-between px-1">
                 <span className="font-monterat-tipis text-[12px] text-stone-500">
-                  {qtySpecName}
+                  Jumlah
                 </span>
                 <span className="font-monterat-tipis text-[12px] font-semibold text-stone-700">
-                  × {qtyValue}
+                  × {qty}
                 </span>
               </div>
             )}
 
-            {/* Box kalkulasi */}
             {hasQty && (
               <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-stone-100 border border-stone-200">
                 <span className="font-monterat-tipis text-[11px] text-stone-500">
-                  {formatRupiah(subtotalBeforeQty)} × {qtyValue}
+                  {formatRupiah(subtotalBeforeQty)} × {qty}
                 </span>
                 <span className="font-monterat-tipis text-[13px] font-bold text-stone-800">
                   = {formatRupiah(grandTotal)}
@@ -1032,7 +1210,7 @@ function OrderSummarySheet({
                 </span>
                 {hasQty && (
                   <p className="font-monterat-tipis text-[10px] text-stone-400 mt-0.5">
-                    {formatRupiah(subtotalBeforeQty)} × {qtyValue} {qtySpecName}
+                    {formatRupiah(subtotalBeforeQty)} × {qty}
                   </p>
                 )}
               </div>
@@ -1049,11 +1227,10 @@ function OrderSummarySheet({
             type="button"
             className="w-full h-[52px] rounded-2xl bg-stone-900 text-white font-barlow-bold text-[15px] font-bold hover:bg-stone-700 active:scale-[0.98] transition-all shadow-lg shadow-stone-900/20"
             onClick={() => {
-              // TODO: hubungkan ke proses checkout
-              alert("Lanjut ke pembayaran!");
+              alert("Order!");
             }}
           >
-            Lanjut ke Pembayaran
+            Order layanan
           </button>
         </div>
       </div>
@@ -1061,102 +1238,17 @@ function OrderSummarySheet({
   );
 }
 
-// ---- Kalkulasi terpusat ----
-interface OrderItem {
-  specName: string;
-  displayValue: string;
-  additionalPrice: number;
-}
-
-interface CalcResult {
-  orderItems: OrderItem[];
-  totalAdditional: number;
-  subtotalBeforeQty: number;
-  qtyMultiplier: number;
-  qtySpecName: string;
-  qtyValue: number;
-  grandTotal: number;
-}
-
-function calcOrder(
-  basePrice: number,
-  specifications: ServiceSpesification[],
-  specInputs: Record<number, SpecInputState>,
-): CalcResult {
-  const orderItems: OrderItem[] = [];
-  let totalAdditional = 0;
-  let qtyMultiplier = 1;
-  let qtySpecName = "";
-  let qtyValue = 0;
-
-  specifications
-    .filter((s) => s.is_active)
-    .forEach((spec) => {
-      const state = specInputs[spec.id];
-      if (!state) return;
-
-      const inputType = String(spec.input_type || "").toLowerCase();
-      const valuePriceMap = buildValuePriceMap(spec.spesification_value);
-
-      if (inputType === "select" && state.type === "select" && state.value) {
-        const addPrice = Number(valuePriceMap.get(state.value) ?? 0);
-        totalAdditional += addPrice;
-        orderItems.push({
-          specName: spec.name,
-          displayValue: state.value,
-          additionalPrice: addPrice,
-        });
-      } else if (
-        inputType === "boolean" &&
-        state.type === "boolean" &&
-        state.checked
-      ) {
-        const addPrice = Number(
-          spec.spesification_value?.[0]?.additional_price ?? 0,
-        );
-        totalAdditional += addPrice;
-        orderItems.push({
-          specName: spec.name,
-          displayValue: "Ya",
-          additionalPrice: addPrice,
-        });
-      } else if (inputType === "text" && state.type === "text" && state.value) {
-        orderItems.push({
-          specName: spec.name,
-          displayValue: state.value,
-          additionalPrice: 0,
-        });
-      } else if (
-        inputType === "number" &&
-        state.type === "number" &&
-        state.value
-      ) {
-        // type number = pengali, bukan tambahan
-        const qty = Number(state.value) || 1;
-        qtyMultiplier = qty;
-        qtySpecName = spec.name;
-        qtyValue = qty;
-      }
-    });
-
-  const subtotalBeforeQty = basePrice + totalAdditional;
-  const grandTotal = subtotalBeforeQty * qtyMultiplier;
-
-  return {
-    orderItems,
-    totalAdditional,
-    subtotalBeforeQty,
-    qtyMultiplier,
-    qtySpecName,
-    qtyValue,
-    grandTotal,
-  };
-}
+// ============================================================
+// FloatingOrderButton
+// ============================================================
 
 interface FloatingOrderButtonProps {
   basePrice: number;
   specifications: ServiceSpesification[];
   specInputs: Record<number, SpecInputState>;
+  isLoggedIn: boolean;
+  qty: number;
+  note: string;
   onClick: () => void;
 }
 
@@ -1164,13 +1256,46 @@ function FloatingOrderButton({
   basePrice,
   specifications,
   specInputs,
+  isLoggedIn,
+  qty,
   onClick,
 }: FloatingOrderButtonProps) {
-  const { grandTotal, qtyValue, qtySpecName, subtotalBeforeQty, orderItems } =
-    calcOrder(basePrice, specifications, specInputs);
-
-  const hasQty = qtyValue > 0;
+  const { subtotalBeforeQty, orderItems } = calcOrder(
+    basePrice,
+    specifications,
+    specInputs,
+  );
+  const grandTotal = subtotalBeforeQty * qty;
+  const hasQty = qty > 1;
   const filledCount = orderItems.length + (hasQty ? 1 : 0);
+
+  if (!isLoggedIn) {
+    return (
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] px-4 pb-6 pt-3 bg-gradient-to-t from-stone-50 via-stone-50/95 to-transparent pointer-events-none z-40">
+        <Link
+          href="/auth/login"
+          className="pointer-events-auto w-full h-[56px] rounded-2xl bg-stone-900 text-white flex items-center justify-center gap-2.5 hover:bg-stone-800 active:scale-[0.98] transition-all shadow-xl shadow-stone-900/25"
+        >
+          <svg
+            className="w-5 h-5 text-white"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+            />
+          </svg>
+          <span className="font-barlow-bold text-[15px] font-bold">
+            Masuk untuk memesan
+          </span>
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] px-4 pb-6 pt-3 bg-gradient-to-t from-stone-50 via-stone-50/95 to-transparent pointer-events-none z-40">
@@ -1210,7 +1335,7 @@ function FloatingOrderButton({
           </p>
           {hasQty && (
             <p className="font-monterat-tipis text-[10px] text-stone-400 -mt-0.5">
-              {formatRupiah(subtotalBeforeQty)} × {qtyValue} {qtySpecName}
+              {formatRupiah(subtotalBeforeQty)} × {qty}
             </p>
           )}
         </div>
