@@ -870,7 +870,11 @@ interface OrderItem {
 interface CalcResult {
   orderItems: OrderItem[];
   totalAdditional: number;
+  subtotalBase: number;
   subtotalBeforeQty: number;
+  specNumberMultiplier: number;
+  specNumberName: string;
+  specNumberValue: number;
   grandTotal: number;
 }
 
@@ -881,6 +885,9 @@ function calcOrder(
 ): CalcResult {
   const orderItems: OrderItem[] = [];
   let totalAdditional = 0;
+  let specNumberMultiplier = 1;
+  let specNumberName = "";
+  let specNumberValue = 0;
 
   specifications
     .filter((s) => s.is_active)
@@ -924,7 +931,11 @@ function calcOrder(
         state.type === "number" &&
         state.value
       ) {
-        // number spec → tampilkan sebagai info di ringkasan, tidak mengalikan
+        // spec number = pengali subtotal (misal: jumlah halaman, jumlah item, dll)
+        const n = Math.max(1, Number(state.value) || 1);
+        specNumberMultiplier = n;
+        specNumberName = spec.name;
+        specNumberValue = n;
         orderItems.push({
           specName: spec.name,
           displayValue: state.value,
@@ -933,13 +944,22 @@ function calcOrder(
       }
     });
 
-  const subtotalBeforeQty = basePrice + totalAdditional;
-  const grandTotal = subtotalBeforeQty; // qty dihitung di luar
+  // Urutan kalkulasi:
+  // 1. subtotalBase = basePrice + semua tambahan spec select/boolean
+  // 2. subtotalAfterSpecNumber = subtotalBase × specNumber (jika ada)
+  // 3. grandTotal = subtotalAfterSpecNumber × qty (dihitung di luar)
+  const subtotalBase = basePrice + totalAdditional;
+  const subtotalBeforeQty = subtotalBase * specNumberMultiplier;
+  const grandTotal = subtotalBeforeQty; // qty dikalikan di luar
 
   return {
     orderItems,
     totalAdditional,
+    subtotalBase,
     subtotalBeforeQty,
+    specNumberMultiplier,
+    specNumberName,
+    specNumberValue,
     grandTotal,
   };
 }
@@ -992,11 +1012,15 @@ function OrderSummarySheet({
     }
   };
 
-  const { subtotalBeforeQty, orderItems } = calcOrder(
-    basePrice,
-    specifications,
-    specInputs,
-  );
+  const {
+    subtotalBase,
+    subtotalBeforeQty,
+    orderItems,
+    specNumberMultiplier,
+    specNumberName,
+    specNumberValue,
+  } = calcOrder(basePrice, specifications, specInputs);
+  const hasSpecNumber = specNumberValue > 0;
   const grandTotal = subtotalBeforeQty * qty;
   const hasQty = qty > 1;
 
@@ -1171,19 +1195,44 @@ function OrderSummarySheet({
 
           {/* Kalkulasi total */}
           <div className="pt-1 space-y-2 border-t border-dashed border-stone-200">
+            {/* Subtotal dasar (base + select/boolean) */}
             <div className="flex items-center justify-between px-1 pt-2">
               <span className="font-monterat-tipis text-[12px] text-stone-500">
-                Subtotal (per unit)
+                Subtotal
               </span>
               <span className="font-monterat-tipis text-[12px] font-semibold text-stone-700">
-                {formatRupiah(subtotalBeforeQty)}
+                {formatRupiah(subtotalBase)}
               </span>
             </div>
 
+            {/* Pengali dari spec number */}
+            {hasSpecNumber && (
+              <div className="flex items-center justify-between px-1">
+                <span className="font-monterat-tipis text-[12px] text-stone-500">
+                  {specNumberName}
+                </span>
+                <span className="font-monterat-tipis text-[12px] font-semibold text-stone-700">
+                  × {specNumberValue}
+                </span>
+              </div>
+            )}
+
+            {hasSpecNumber && (
+              <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-stone-100 border border-stone-200">
+                <span className="font-monterat-tipis text-[11px] text-stone-500">
+                  {formatRupiah(subtotalBase)} × {specNumberValue}
+                </span>
+                <span className="font-monterat-tipis text-[13px] font-bold text-stone-800">
+                  = {formatRupiah(subtotalBeforeQty)}
+                </span>
+              </div>
+            )}
+
+            {/* Qty dari field Jumlah */}
             {hasQty && (
               <div className="flex items-center justify-between px-1">
                 <span className="font-monterat-tipis text-[12px] text-stone-500">
-                  Jumlah
+                  Jumlah order
                 </span>
                 <span className="font-monterat-tipis text-[12px] font-semibold text-stone-700">
                   × {qty}
@@ -1208,9 +1257,17 @@ function OrderSummarySheet({
                 <span className="font-barlow-bold text-sm font-bold text-white">
                   Total
                 </span>
-                {hasQty && (
+                {(hasSpecNumber || hasQty) && (
                   <p className="font-monterat-tipis text-[10px] text-stone-400 mt-0.5">
-                    {formatRupiah(subtotalBeforeQty)} × {qty}
+                    {hasSpecNumber &&
+                      !hasQty &&
+                      `${formatRupiah(subtotalBase)} × ${specNumberValue}`}
+                    {!hasSpecNumber &&
+                      hasQty &&
+                      `${formatRupiah(subtotalBeforeQty)} × ${qty}`}
+                    {hasSpecNumber &&
+                      hasQty &&
+                      `${formatRupiah(subtotalBase)} × ${specNumberValue} × ${qty}`}
                   </p>
                 )}
               </div>
@@ -1260,7 +1317,7 @@ function FloatingOrderButton({
   qty,
   onClick,
 }: FloatingOrderButtonProps) {
-  const { subtotalBeforeQty, orderItems } = calcOrder(
+  const { subtotalBeforeQty, orderItems, specNumberValue } = calcOrder(
     basePrice,
     specifications,
     specInputs,
