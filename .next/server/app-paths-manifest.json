@@ -1,22 +1,7 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
-  "/(main)/category/[slug]/page": "app/(main)/category/[slug]/page.js",
-  "/(main)/category/[slug]/service/[id]/page": "app/(main)/category/[slug]/service/[id]/page.js",
   "/(main)/page": "app/(main)/page.js",
   "/(main)/profile/page": "app/(main)/profile/page.js",
-  "/admin/dashboard/page": "app/admin/dashboard/page.js",
-  "/admin/dashboard/services/[id]/page": "app/admin/dashboard/services/[id]/page.js",
-  "/admin/dashboard/services/page": "app/admin/dashboard/services/page.js",
-  "/(main)/riwayat-order/page": "app/(main)/riwayat-order/page.js",
-  "/admin/dashboard/categories/[id]/page": "app/admin/dashboard/categories/[id]/page.js",
-  "/admin/dashboard/categories/page": "app/admin/dashboard/categories/page.js",
-  "/admin/login/page": "app/admin/login/page.js",
   "/auth/login/page": "app/auth/login/page.js",
-  "/auth/forgot-password/otp/page": "app/auth/forgot-password/otp/page.js",
-  "/auth/forgot-password/page": "app/auth/forgot-password/page.js",
-  "/auth/forgot-password/set-password/page": "app/auth/forgot-password/set-password/page.js",
-  "/auth/page": "app/auth/page.js",
-  "/auth/register/page": "app/auth/register/page.js",
-  "/auth/verify-akun/otp/page": "app/auth/verify-akun/otp/page.js",
-  "/auth/verify-akun/page": "app/auth/verify-akun/page.js"
+  "/(main)/riwayat-order/page": "app/(main)/riwayat-order/page.js"
 }
