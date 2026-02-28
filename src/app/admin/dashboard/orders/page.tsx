@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getToken } from "@/lib/auth";
 import type { OrderStatus } from "@/api/order";
 import { getOrders } from "@/api/order";
+import { toStaticUrl } from "@/app/helper/normalizeUrl"; // ← tambah ini
 
 const STATUS_OPTIONS: { label: string; value: OrderStatus | "all" }[] = [
   { label: "Semua status", value: "all" },
@@ -123,7 +124,7 @@ function FilePreviewModal({
 }) {
   const isPdf = fileType.toLowerCase().includes("pdf");
   const isImage = /\.(png|jpe?g|gif|webp|svg)$/i.test(fileType);
-  const fullUrl = url.startsWith("http") ? url : `http://${url}`;
+  const fullUrl = toStaticUrl(url); // ← ganti ini
 
   return (
     <div
@@ -270,17 +271,11 @@ function AdminOrderCard({ order }: { order: any }) {
   const user = order?.user ?? null;
 
   const isImage = /\.(png|jpe?g|gif|webp|svg)$/i.test(fileType);
-  const fullFileUrl = fileUrl
-    ? fileUrl.startsWith("http")
-      ? fileUrl
-      : `http://${fileUrl}`
-    : null;
+  const fullFileUrl = fileUrl ? toStaticUrl(fileUrl) : null; // ← ganti ini
 
   return (
     <div className="rounded-2xl border border-stone-100 bg-white shadow-sm overflow-hidden">
-      {/* Status color strip */}
       <div className={`h-1 w-full ${statusCfg.dot}`} />
-
       <div className="px-4 pt-3 pb-3">
         {/* Top: service name + order code + status badge */}
         <div className="flex items-start justify-between gap-2 mb-3">
@@ -300,13 +295,13 @@ function AdminOrderCard({ order }: { order: any }) {
           </span>
         </div>
 
-        {/* User info — khusus admin */}
+        {/* User info */}
         {user && (
           <div className="flex items-center gap-2 mb-3 rounded-xl border border-stone-100 bg-stone-50 px-3 py-2">
             {user.avatar_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={user.avatar_url}
+                src={toStaticUrl(user.avatar_url)}
                 alt={user.name}
                 className="w-7 h-7 rounded-full object-cover border border-stone-200 shrink-0"
               />
@@ -343,7 +338,7 @@ function AdminOrderCard({ order }: { order: any }) {
           </div>
         )}
 
-        {/* Info grid: total, qty, tanggal */}
+        {/* Info grid */}
         <div className="grid grid-cols-4 gap-2 mb-3">
           {totalPrice !== null && (
             <div className="col-span-2 rounded-xl bg-stone-50 border border-stone-100 px-2 py-1.5 flex flex-col">
@@ -378,7 +373,6 @@ function AdminOrderCard({ order }: { order: any }) {
           )}
         </div>
 
-        {/* Expired info jika ada */}
         {expiredAt && (
           <div className="flex items-center gap-1.5 mb-2 rounded-xl border border-amber-100 bg-amber-50 px-3 py-1.5">
             <svg
@@ -400,7 +394,6 @@ function AdminOrderCard({ order }: { order: any }) {
           </div>
         )}
 
-        {/* User note */}
         {userNote && (
           <div className="flex items-start gap-1.5 mb-2 bg-stone-50 rounded-xl px-3 py-2 border border-stone-100">
             <svg
@@ -420,7 +413,6 @@ function AdminOrderCard({ order }: { order: any }) {
           </div>
         )}
 
-        {/* Spesifikasi accordion */}
         {specs.length > 0 && (
           <button
             type="button"
@@ -636,9 +628,9 @@ export default function AdminOrdersPage() {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        const message =
-          err instanceof Error ? err.message : "Gagal memuat data order.";
-        setError(message);
+        setError(
+          err instanceof Error ? err.message : "Gagal memuat data order.",
+        );
         setOrders([]);
         setHasMore(false);
       })
@@ -653,7 +645,6 @@ export default function AdminOrdersPage() {
 
   return (
     <main className="flex-1 w-full max-w-[900px] mx-auto px-4 py-6">
-      {/* Header */}
       <div className="mb-5">
         <h1 className="font-barlow-bold text-2xl font-bold text-stone-900 mb-0.5">
           Management Orders
@@ -666,54 +657,16 @@ export default function AdminOrdersPage() {
       {/* Search + Sort */}
       <div className="mb-5">
         <div className="flex gap-2 mb-2">
-          <button
-            type="button"
-            onClick={() => setSort("newest")}
-            className={`inline-flex items-center gap-1.5 rounded-2xl px-3 py-2 text-[12px] font-semibold border transition active:scale-[0.97] ${
-              sort === "newest"
-                ? "bg-stone-900 border-stone-900 text-white"
-                : "bg-white border-stone-200 text-stone-600"
-            }`}
-          >
-            <svg
-              className="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          {(["newest", "oldest"] as const).map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setSort(s)}
+              className={`inline-flex items-center gap-1.5 rounded-2xl px-3 py-2 text-[12px] font-semibold border transition active:scale-[0.97] ${sort === s ? "bg-stone-900 border-stone-900 text-white" : "bg-white border-stone-200 text-stone-600"}`}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
-              />
-            </svg>
-            Terbaru
-          </button>
-          <button
-            type="button"
-            onClick={() => setSort("oldest")}
-            className={`inline-flex items-center gap-1.5 rounded-2xl px-3 py-2 text-[12px] font-semibold border transition active:scale-[0.97] ${
-              sort === "oldest"
-                ? "bg-stone-900 border-stone-900 text-white"
-                : "bg-white border-stone-200 text-stone-600"
-            }`}
-          >
-            <svg
-              className="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"
-              />
-            </svg>
-            Terlama
-          </button>
+              {s === "newest" ? "Terbaru" : "Terlama"}
+            </button>
+          ))}
         </div>
         <div className="relative">
           <svg
@@ -782,11 +735,7 @@ export default function AdminOrdersPage() {
                   setStatus(opt.value as any);
                   setPage(1);
                 }}
-                className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-semibold border transition active:scale-[0.97] ${
-                  isActive
-                    ? "bg-stone-900 border-stone-900 text-white"
-                    : "bg-white border-stone-200 text-stone-600"
-                }`}
+                className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-semibold border transition active:scale-[0.97] ${isActive ? "bg-stone-900 border-stone-900 text-white" : "bg-white border-stone-200 text-stone-600"}`}
               >
                 {cfg && (
                   <span
@@ -804,7 +753,6 @@ export default function AdminOrdersPage() {
         </p>
       </div>
 
-      {/* Loading skeleton */}
       {loading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[1, 2, 3, 4].map((i) => (
@@ -816,77 +764,42 @@ export default function AdminOrdersPage() {
         </div>
       )}
 
-      {/* Error */}
       {!loading && error && (
         <div className="py-3 px-4 rounded-2xl bg-red-50 border border-red-100 text-red-700 text-sm">
           {error}
         </div>
       )}
 
-      {/* Empty */}
       {!loading && !error && filteredOrders.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 gap-3">
           <div className="w-14 h-14 rounded-2xl bg-stone-100 flex items-center justify-center">
-            {search ? (
-              <svg
-                className="w-7 h-7 text-stone-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            ) : (
-              <svg
-                className="w-7 h-7 text-stone-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                />
-              </svg>
-            )}
+            <svg
+              className="w-7 h-7 text-stone-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              />
+            </svg>
           </div>
           <div className="text-center">
-            {search ? (
-              <>
-                <p className="font-semibold text-stone-700 text-sm">
-                  Hasil tidak ditemukan
-                </p>
-                <p className="text-xs text-stone-400 mt-0.5">
-                  Tidak ada order dengan kode atau layanan{" "}
-                  <span className="font-medium">"{search}"</span>.
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="font-semibold text-stone-700 text-sm">
-                  Tidak ada order
-                </p>
-                <p className="text-xs text-stone-400 mt-0.5">
-                  Tidak ada pesanan dengan status{" "}
-                  <span className="font-medium">
-                    {statusLabel.toLowerCase()}
-                  </span>
-                  .
-                </p>
-              </>
-            )}
+            <p className="font-semibold text-stone-700 text-sm">
+              {search ? "Hasil tidak ditemukan" : "Tidak ada order"}
+            </p>
+            <p className="text-xs text-stone-400 mt-0.5">
+              {search
+                ? `Tidak ada order dengan kode atau layanan "${search}".`
+                : `Tidak ada pesanan dengan status ${statusLabel.toLowerCase()}.`}
+            </p>
           </div>
         </div>
       )}
 
-      {/* Order grid */}
       {!loading && !error && filteredOrders.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
           {filteredOrders.map((order: any) => (
@@ -898,7 +811,6 @@ export default function AdminOrdersPage() {
         </div>
       )}
 
-      {/* Pagination */}
       {!loading && !error && filteredOrders.length > 0 && (
         <div className="flex items-center justify-between">
           <button
