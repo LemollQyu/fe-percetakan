@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { postRegister, type RegisterPayload } from "@/api/authentikasi/register/post";
+import {
+  postRegister,
+  type RegisterPayload,
+} from "@/api/authentikasi/register/post";
+import AlertDialog from "@/components/main/AlertDialog";
 
 const fields: {
   key: keyof RegisterPayload;
@@ -16,16 +19,63 @@ const fields: {
   maxLength?: number;
   autoComplete?: string;
 }[] = [
-  { key: "username", label: "Username", type: "text", placeholder: "Min. 3 karakter", minLength: 3, maxLength: 30, autoComplete: "username" },
-  { key: "name", label: "Nama lengkap", type: "text", placeholder: "Min. 3 karakter", minLength: 3, maxLength: 50, autoComplete: "name" },
-  { key: "email", label: "Email", type: "email", placeholder: "contoh@email.com", autoComplete: "email" },
-  { key: "phone", label: "Phone", type: "tel", placeholder: "08123456789", inputMode: "numeric", pattern: "[0-9]*", minLength: 9, maxLength: 15, autoComplete: "tel" },
-  { key: "password", label: "Password", type: "password", placeholder: "Min. 8 karakter", minLength: 8, maxLength: 20, autoComplete: "new-password" },
-  { key: "confirm_password", label: "Konfirmasi password", type: "password", placeholder: "Ulangi password", minLength: 8, maxLength: 20, autoComplete: "new-password" },
+  {
+    key: "username",
+    label: "Username",
+    type: "text",
+    placeholder: "Min. 3 karakter",
+    minLength: 3,
+    maxLength: 30,
+    autoComplete: "username",
+  },
+  {
+    key: "name",
+    label: "Nama lengkap",
+    type: "text",
+    placeholder: "Min. 3 karakter",
+    minLength: 3,
+    maxLength: 50,
+    autoComplete: "name",
+  },
+  {
+    key: "email",
+    label: "Email",
+    type: "email",
+    placeholder: "contoh@email.com",
+    autoComplete: "email",
+  },
+  {
+    key: "phone",
+    label: "Phone",
+    type: "tel",
+    placeholder: "08123456789",
+    inputMode: "numeric",
+    pattern: "[0-9]*",
+    minLength: 9,
+    maxLength: 15,
+    autoComplete: "tel",
+  },
+  {
+    key: "password",
+    label: "Password",
+    type: "password",
+    placeholder: "Min. 8 karakter",
+    minLength: 8,
+    maxLength: 20,
+    autoComplete: "new-password",
+  },
+  {
+    key: "confirm_password",
+    label: "Konfirmasi password",
+    type: "password",
+    placeholder: "Ulangi password",
+    minLength: 8,
+    maxLength: 20,
+    autoComplete: "new-password",
+  },
 ];
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [form, setForm] = useState<RegisterPayload>({
     username: "",
     name: "",
@@ -35,8 +85,8 @@ export default function RegisterPage() {
     confirm_password: "",
   });
   const [error, setError] = useState<string>("");
-  const [success, setSuccess] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [alertOpen, setAlertOpen] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -47,7 +97,6 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setSuccess("");
     setLoading(true);
 
     if (form.password !== form.confirm_password) {
@@ -57,10 +106,16 @@ export default function RegisterPage() {
     }
 
     try {
-      const res = await postRegister(form);
-      setSuccess(res.message + " " + (res.note ?? ""));
-      setForm({ username: "", name: "", email: "", phone: "", password: "", confirm_password: "" });
-      router.push("/auth/login");
+      await postRegister(form);
+      setForm({
+        username: "",
+        name: "",
+        email: "",
+        phone: "",
+        password: "",
+        confirm_password: "",
+      });
+      setAlertOpen(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Gagal mendaftar.");
     } finally {
@@ -70,7 +125,17 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f5f0eb] relative">
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(214,211,209,0.4),transparent)] pointer-events-none" aria-hidden />
+      <div
+        className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(214,211,209,0.4),transparent)] pointer-events-none"
+        aria-hidden
+      />
+
+      <AlertDialog
+        open={alertOpen}
+        title="Registrasi Berhasil!"
+        message="Silahkan aktivasi akun terlebih dulu sebelum masuk."
+        onClose={() => setAlertOpen(false)}
+      />
 
       <header className="relative z-10 flex items-center justify-between h-14 px-4 max-w-[430px] w-full mx-auto">
         <Link
@@ -78,8 +143,18 @@ export default function RegisterPage() {
           className="flex items-center justify-center w-10 h-10 rounded-full text-stone-600 hover:bg-white/80 hover:text-stone-800 active:scale-95 transition-all duration-200 shadow-sm"
           aria-label="Kembali"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
         </Link>
         <span className="w-10" />
@@ -114,17 +189,10 @@ export default function RegisterPage() {
                 role="alert"
                 className="font-monterat-tipis mb-4 flex items-start gap-3 rounded-2xl bg-red-50/90 border border-red-100 px-4 py-3 text-sm font-medium text-red-800"
               >
-                <span className="flex-shrink-0 mt-0.5 text-red-500" aria-hidden>●</span>
+                <span className="flex-shrink-0 mt-0.5 text-red-500" aria-hidden>
+                  ●
+                </span>
                 <span>{error}</span>
-              </div>
-            )}
-            {success && (
-              <div
-                role="status"
-                className="font-monterat-tipis mb-4 flex items-start gap-3 rounded-2xl bg-emerald-50/90 border border-emerald-100 px-4 py-3 text-sm font-medium text-emerald-800"
-              >
-                <span className="flex-shrink-0 mt-0.5 text-emerald-500" aria-hidden>✓</span>
-                <span>{success}</span>
               </div>
             )}
 
@@ -179,7 +247,9 @@ export default function RegisterPage() {
               className="font-monterat-tipis inline-flex items-center gap-1.5 rounded-full bg-stone-100 px-5 py-2.5 text-sm font-semibold text-stone-600 hover:bg-stone-200 hover:text-stone-800 active:bg-stone-300 transition-colors duration-200"
             >
               Sudah punya akun?
-              <span className="font-barlow-bold font-semibold text-stone-700">Masuk</span>
+              <span className="font-barlow-bold font-semibold text-stone-700">
+                Masuk
+              </span>
             </Link>
           </div>
 

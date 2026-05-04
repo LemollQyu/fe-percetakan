@@ -5,6 +5,7 @@
 
 const TOKEN_KEY = "token";
 const AUTH_ROLE_KEY = "auth_role";
+const USER_ID_KEY = "user_id";       
 const USER_AVATAR_URL_KEY = "user_avatar_url";
 const USER_USERNAME_KEY = "user_username";
 const USER_NAME_KEY = "user_name";
@@ -35,12 +36,14 @@ export function clearAuth(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(AUTH_ROLE_KEY);
+  localStorage.removeItem(USER_ID_KEY);
   localStorage.removeItem(USER_AVATAR_URL_KEY);
   localStorage.removeItem(USER_USERNAME_KEY);
   localStorage.removeItem(USER_NAME_KEY);
   localStorage.removeItem(USER_EMAIL_KEY);
   localStorage.removeItem(USER_PHONE_KEY);
 }
+
 
 /**
  * Logout (clear auth) dan redirect ke halaman login.
@@ -94,4 +97,29 @@ export function isAdmin(): boolean {
 
 export function isLoggedIn(): boolean {
   return !!getToken();
+}
+
+
+export function getUserId(): number | null {
+  if (typeof window === "undefined") return null;
+  
+  // Coba dari localStorage dulu
+  const id = localStorage.getItem(USER_ID_KEY);
+  if (id) return Number(id);
+  
+  // Fallback: decode dari JWT token
+  const token = getToken();
+  if (!token) return null;
+  
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.user_id ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function setUserId(id: number): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(USER_ID_KEY, String(id));
 }

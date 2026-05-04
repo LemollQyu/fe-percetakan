@@ -4,8 +4,15 @@ import { useState } from "react";
 import { RequireUser } from "@/components/main/RequireUser";
 import { PesananTab } from "@/components/main/PesananTab";
 import { RiwayatTab } from "@/components/main/RiwayatTab";
+import { PengembalianTab } from "@/components/main/PengembalianTab";
 
-type Tab = "pesanan" | "riwayat";
+type Tab = "pesanan" | "riwayat" | "pengembalian";
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: "pesanan", label: "Pesanan" },
+  { id: "riwayat", label: "Riwayat" },
+  { id: "pengembalian", label: "Pengembalian" },
+];
 
 export default function RiwayatOrderPage() {
   const [activeTab, setActiveTab] = useState<Tab>("pesanan");
@@ -29,25 +36,27 @@ export default function RiwayatOrderPage() {
         {/* ── Tab Switcher ── */}
         <div className="mb-6">
           <div className="flex rounded-2xl bg-stone-100 p-1 gap-1">
-            {(["pesanan", "riwayat"] as const).map((tab) => (
+            {TABS.map((tab) => (
               <button
-                key={tab}
+                key={tab.id}
                 type="button"
-                onClick={() => setActiveTab(tab)}
+                onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200 active:scale-[0.98] ${
-                  activeTab === tab
+                  activeTab === tab.id
                     ? "bg-white text-stone-900 shadow-sm shadow-stone-200/60"
                     : "text-stone-500 hover:text-stone-700"
                 }`}
               >
-                {tab === "pesanan" ? "Pesanan" : "Riwayat"}
+                {tab.label}
               </button>
             ))}
           </div>
         </div>
 
         {/* ── Content ── */}
-        {activeTab === "pesanan" ? <PesananTab /> : <RiwayatTab />}
+        {activeTab === "pesanan" && <PesananTab />}
+        {activeTab === "riwayat" && <RiwayatTab />}
+        {activeTab === "pengembalian" && <PengembalianTab />}
       </RequireUser>
     </main>
   );

@@ -2,51 +2,29 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { getCategoriesList, getCategoryById } from "@/api/jasa/categories";
 import type { CategoryJasaDetail } from "@/api/jasa/categories/types";
-import { ServiceThumbnailCarousel } from "@/components/main/ServiceThumbnailCarousel";
+import { ServicePaginatedGrid } from "@/components/main/ServicePaginationGrid";
 
 /** URL icon kategori: konversi ke path relatif untuk proxy Next.js */
 function normalizeIconUrl(url: string): string {
   if (!url || typeof url !== "string") return url;
   let t = url.trim();
-  
+
   if (t.startsWith("/static/")) return t;
-  
+
   if (t.startsWith("http://") || t.startsWith("https://")) {
     const staticIndex = t.indexOf("/static/");
     if (staticIndex !== -1) {
       return t.substring(staticIndex);
     }
   }
-  
+
   const staticIndex = t.indexOf("/static/");
   if (staticIndex !== -1) {
     return t.substring(staticIndex);
   }
-  
+
   if (t.startsWith("/")) return t;
-  
-  return `/static/${t}`;
-}
 
-/** URL media service: konversi ke path relatif /static/* supaya kena rewrite Next.js */
-function normalizeServiceMediaUrl(url: string): string {
-  if (!url || typeof url !== "string") return url;
-  let t = url.trim();
-  if (!t) return t;
-
-  if (t.startsWith("/static/")) return t;
-
-  if (t.startsWith("http://") || t.startsWith("https://")) {
-    const staticIndex = t.indexOf("/static/");
-    if (staticIndex !== -1) return t.substring(staticIndex);
-    return t;
-  }
-
-  const staticIndex = t.indexOf("/static/");
-  if (staticIndex !== -1) return t.substring(staticIndex);
-
-  if (t.startsWith("static/")) return `/${t}`;
-  if (t.startsWith("/")) return t;
   return `/static/${t}`;
 }
 
@@ -75,7 +53,7 @@ function CategoryDetailSkeleton() {
       {/* Services section skeleton */}
       <div className="space-y-4">
         <div className="h-5 bg-stone-200 rounded w-32 animate-pulse" />
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 grid-cols-2">
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
@@ -170,8 +148,18 @@ async function CategoryDetail({ slug }: { slug: string }) {
           className="flex items-center justify-center w-10 h-10 rounded-xl border border-stone-200 bg-white/80 hover:bg-stone-50 active:scale-95 transition-all shrink-0"
           aria-label="Kembali"
         >
-          <svg className="w-5 h-5 text-stone-700" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          <svg
+            className="w-5 h-5 text-stone-700"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.5}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
         </Link>
         <h1 className="font-barlow-bold text-xl font-bold text-stone-900">
@@ -225,65 +213,14 @@ async function CategoryDetail({ slug }: { slug: string }) {
             </p>
           </div>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
-            {services.map((s) => {
-              const icon =
-                (s.media ?? []).find((m: { type?: string }) => m.type === "icon")?.url ??
-                "";
-              const thumbnails =
-                (s.media ?? [])
-                  .filter((m: { type?: string }) => m.type === "thumbnail")
-                  .map((m: { url?: string }) => m.url ?? "") ?? [];
-              return (
-                <Link
-                  key={s.id}
-                  href={`/category/${slug}/service/${s.id}`}
-                  className="rounded-2xl bg-white border border-stone-100 shadow-sm shadow-stone-200/20 overflow-hidden hover:shadow-md hover:border-stone-200 transition-all"
-                >
-                  <div className="p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 rounded-xl bg-stone-100 border border-stone-200 overflow-hidden flex items-center justify-center shrink-0">
-                        {icon ? (
-                          <img
-                            src={normalizeServiceMediaUrl(icon)}
-                            alt=""
-                            className="w-full h-full object-contain"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <span className="text-stone-600 font-barlow-bold text-lg">
-                            {s.name?.charAt(0)?.toUpperCase() ?? "?"}
-                          </span>
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-barlow-bold text-[15px] font-bold text-stone-900 leading-tight truncate">
-                          {s.name}
-                        </p>
-                      </div>
-                    </div>
-
-                    <ServiceThumbnailCarousel
-                      images={thumbnails.map(normalizeServiceMediaUrl)}
-                      alt={s.name}
-                    />
-                
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+          <ServicePaginatedGrid services={services} slug={slug} />
         )}
       </section>
     </div>
   );
 }
 
-export default function CategoryPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export default function CategoryPage({ params }: { params: { slug: string } }) {
   const slug = params.slug;
 
   return (

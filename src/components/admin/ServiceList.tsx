@@ -73,7 +73,7 @@ export function ServiceList({
                 >
                   <div className="flex flex-row items-start justify-between gap-3 sm:gap-4">
                     <Link
-                      href={`/admin/dashboard/services/${svc.id}`}
+                      href={`/admin/kelola/services/${svc.id}`}
                       className="flex flex-row items-start gap-2 sm:gap-4 min-w-0 flex-1"
                     >
                       {/* Satu thumbnail acak di samping kiri */}
@@ -134,7 +134,7 @@ export function ServiceList({
                     </Link>
                     <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
                       <Link
-                        href={`/admin/dashboard/services/${svc.id}`}
+                        href={`/admin/kelola/services/${svc.id}`}
                         className="font-monterat-tipis inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 sm:py-2 min-h-[44px] sm:min-h-0 sm:px-4 text-xs sm:text-sm font-semibold text-stone-800 bg-white border border-stone-200 hover:bg-stone-50 active:bg-stone-100 transition-colors"
                       >
                         Kelola
@@ -161,7 +161,9 @@ export function ServiceList({
                         {actioningId === svc.id ? (
                           <span className="h-4 w-4 animate-spin rounded-full border-2 border-stone-300 border-t-stone-600" />
                         ) : (
-                          <span>{svc.is_active ? "Nonaktifkan" : "Aktifkan"}</span>
+                          <span>
+                            {svc.is_active ? "Nonaktifkan" : "Aktifkan"}
+                          </span>
                         )}
                       </button>
                       <button
@@ -183,4 +185,3 @@ export function ServiceList({
     </div>
   );
 }
-

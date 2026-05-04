@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { getServiceById } from "@/api/jasa/services";
 import type {
   ServiceJasa,
@@ -10,7 +10,8 @@ import type {
   ServiceSpesification,
   ServiceSpesificationValue,
 } from "@/api/jasa/services";
-import { getToken, getAuthRole } from "@/lib/auth";
+import { getToken, getAuthRole, getUserId } from "@/lib/auth";
+import { createOrder, CreateOrderSpecification } from "@/api/order";
 
 function normalizeMediaUrl(url: string): string {
   if (!url || typeof url !== "string") return url;
@@ -455,6 +456,7 @@ export default function ServiceDetailPage() {
   const [specInputs, setSpecInputs] = useState<Record<number, SpecInputState>>(
     {},
   );
+  const [isOrdering, setIsOrdering] = useState(false);
 
   useEffect(() => {
     const token = getToken();
@@ -537,6 +539,12 @@ export default function ServiceDetailPage() {
     });
     return result;
   }, [specInputs, confirmedInputs]);
+
+  // ── Validasi spesifikasi wajib ──
+  const isSpecValid = useMemo(() => {
+    if (!service) return false;
+    return validateRequiredSpecs(service.spesification ?? [], mergedInputs);
+  }, [service, mergedInputs]);
 
   if (loading) {
     return (
@@ -838,23 +846,54 @@ export default function ServiceDetailPage() {
             qty={confirmedQty}
             note={orderNote}
             onClick={() => setOrderSheetOpen(true)}
+            isSpecValid={isSpecValid}
+            isSubmitting={isOrdering}
           />
           {isLoggedIn && (
             <OrderSummarySheet
               open={orderSheetOpen}
               onClose={() => setOrderSheetOpen(false)}
               serviceName={service.name}
+              serviceId={service.id}
+              categorySlug={slug}
               basePrice={Number(service.base_price ?? 0)}
               specifications={service.spesification ?? []}
               qty={confirmedQty}
               note={orderNote}
               specInputs={mergedInputs}
+              isSpecValid={isSpecValid}
+              onSubmittingChange={setIsOrdering}
             />
           )}
         </>
       )}
     </main>
   );
+}
+
+// ============================================================
+// Validasi spesifikasi wajib
+// ============================================================
+
+function validateRequiredSpecs(
+  specifications: ServiceSpesification[],
+  specInputs: Record<number, SpecInputState>,
+): boolean {
+  return specifications
+    .filter((s) => s.is_active && s.is_required)
+    .every((spec) => {
+      const state = specInputs[spec.id];
+      if (!state) return false;
+      const inputType = String(spec.input_type || "").toLowerCase();
+      if (inputType === "select")
+        return state.type === "select" && !!state.value;
+      if (inputType === "boolean") return state.type === "boolean"; // boolean selalu valid (true/false)
+      if (inputType === "text")
+        return state.type === "text" && !!state.value.trim();
+      if (inputType === "number")
+        return state.type === "number" && !!state.value;
+      return false;
+    });
 }
 
 // ============================================================
@@ -931,7 +970,6 @@ function calcOrder(
         state.type === "number" &&
         state.value
       ) {
-        // spec number = pengali subtotal (misal: jumlah halaman, jumlah item, dll)
         const n = Math.max(1, Number(state.value) || 1);
         specNumberMultiplier = n;
         specNumberName = spec.name;
@@ -944,13 +982,9 @@ function calcOrder(
       }
     });
 
-  // Urutan kalkulasi:
-  // 1. subtotalBase = basePrice + semua tambahan spec select/boolean
-  // 2. subtotalAfterSpecNumber = subtotalBase × specNumber (jika ada)
-  // 3. grandTotal = subtotalAfterSpecNumber × qty (dihitung di luar)
   const subtotalBase = basePrice + totalAdditional;
   const subtotalBeforeQty = subtotalBase * specNumberMultiplier;
-  const grandTotal = subtotalBeforeQty; // qty dikalikan di luar
+  const grandTotal = subtotalBeforeQty;
 
   return {
     orderItems,
@@ -972,26 +1006,38 @@ interface OrderSummarySheetProps {
   open: boolean;
   onClose: () => void;
   serviceName: string;
+  serviceId: number;
+  categorySlug: string;
   basePrice: number;
   qty: number;
   note: string;
   specifications: ServiceSpesification[];
   specInputs: Record<number, SpecInputState>;
+  isSpecValid: boolean;
+  onSubmittingChange?: (v: boolean) => void;
 }
 
 function OrderSummarySheet({
   open,
   onClose,
   serviceName,
+  serviceId,
+  categorySlug,
   basePrice,
   specifications,
   specInputs,
   note,
   qty,
+  isSpecValid,
+  onSubmittingChange,
 }: OrderSummarySheetProps) {
+  const router = useRouter();
   const sheetRef = useRef<HTMLDivElement>(null);
   const [rendered, setRendered] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isFullLoading, setIsFullLoading] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -1007,8 +1053,65 @@ function OrderSummarySheet({
   }, [open]);
 
   const handleBackdropClick = (e: React.MouseEvent) => {
+    if (isSubmitting) return;
     if (sheetRef.current && !sheetRef.current.contains(e.target as Node)) {
       onClose();
+    }
+  };
+
+  const handleOrder = async () => {
+    setIsSubmitting(true);
+    onSubmittingChange?.(true);
+    setSubmitError(null);
+
+    try {
+      const token = getToken();
+      const userId = getUserId();
+
+      if (!token || !userId) {
+        setSubmitError("Sesi login habis, silakan login ulang.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Build specifications dari specInputs
+      const specs: CreateOrderSpecification[] = [];
+      Object.entries(specInputs).forEach(([specIdStr, state]) => {
+        const specId = Number(specIdStr);
+        if (state.type === "select" && state.value) {
+          specs.push({ specification_id: specId, value: state.value });
+        } else if (state.type === "boolean") {
+          specs.push({
+            specification_id: specId,
+            value: state.checked,
+          });
+        } else if (state.type === "text" && state.value) {
+          specs.push({ specification_id: specId, value: state.value });
+        } else if (state.type === "number" && state.value) {
+          specs.push({ specification_id: specId, value: Number(state.value) });
+        }
+      });
+
+      const result = await createOrder(
+        {
+          user_id: userId,
+          service_id: serviceId,
+          quantity: qty,
+          user_note: note,
+          specifications: specs,
+        },
+        token,
+      );
+
+      const orderCode = result.data_order?.order_code?.code;
+      if (!orderCode) throw new Error("Order code tidak ditemukan.");
+      setIsFullLoading(true);
+      router.push(`/my-order/${categorySlug}/${orderCode}`);
+    } catch (e) {
+      setSubmitError(e instanceof Error ? e.message : "Gagal membuat order.");
+    } finally {
+      setIsSubmitting(false);
+      onSubmittingChange?.(false);
     }
   };
 
@@ -1023,6 +1126,17 @@ function OrderSummarySheet({
   const hasSpecNumber = specNumberValue > 0;
   const grandTotal = subtotalBeforeQty * qty;
   const hasQty = qty > 1;
+
+  if (isFullLoading) {
+    return (
+      <div className="fixed inset-0 z-[999] bg-white flex flex-col items-center justify-center gap-4">
+        <span className="h-10 w-10 animate-spin rounded-full border-2 border-stone-200 border-t-stone-800" />
+        <p className="font-monterat-tipis text-sm text-stone-500">
+          Memproses pesanan...
+        </p>
+      </div>
+    );
+  }
 
   if (!rendered) return null;
 
@@ -1195,7 +1309,6 @@ function OrderSummarySheet({
 
           {/* Kalkulasi total */}
           <div className="pt-1 space-y-2 border-t border-dashed border-stone-200">
-            {/* Subtotal dasar (base + select/boolean) */}
             <div className="flex items-center justify-between px-1 pt-2">
               <span className="font-monterat-tipis text-[12px] text-stone-500">
                 Subtotal
@@ -1205,7 +1318,6 @@ function OrderSummarySheet({
               </span>
             </div>
 
-            {/* Pengali dari spec number */}
             {hasSpecNumber && (
               <div className="flex items-center justify-between px-1">
                 <span className="font-monterat-tipis text-[12px] text-stone-500">
@@ -1228,7 +1340,6 @@ function OrderSummarySheet({
               </div>
             )}
 
-            {/* Qty dari field Jumlah */}
             {hasQty && (
               <div className="flex items-center justify-between px-1">
                 <span className="font-monterat-tipis text-[12px] text-stone-500">
@@ -1279,15 +1390,51 @@ function OrderSummarySheet({
         </div>
 
         {/* CTA */}
-        <div className="px-5 pb-8 pt-3 shrink-0 border-t border-stone-100">
+        <div className="px-5 pb-8 pt-3 shrink-0 border-t border-stone-100 space-y-2">
+          {!isSpecValid && (
+            <div className="flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-100 px-3 py-2.5">
+              <svg
+                className="w-3.5 h-3.5 text-amber-500 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                />
+              </svg>
+              <p className="font-monterat-tipis text-[11px] text-amber-700">
+                Lengkapi semua spesifikasi yang wajib diisi terlebih dahulu.
+              </p>
+            </div>
+          )}
+          {submitError && (
+            <p className="font-monterat-tipis text-[12px] text-red-500 text-center px-1">
+              {submitError}
+            </p>
+          )}
           <button
             type="button"
-            className="w-full h-[52px] rounded-2xl bg-stone-900 text-white font-barlow-bold text-[15px] font-bold hover:bg-stone-700 active:scale-[0.98] transition-all shadow-lg shadow-stone-900/20"
-            onClick={() => {
-              alert("Order!");
-            }}
+            disabled={isSubmitting || !isSpecValid}
+            onClick={handleOrder}
+            className={`w-full h-[52px] rounded-2xl text-white font-barlow-bold text-[15px] font-bold transition-all shadow-lg flex items-center justify-center gap-2
+              ${
+                isSubmitting || !isSpecValid
+                  ? "bg-stone-300 cursor-not-allowed shadow-none opacity-60"
+                  : "bg-stone-900 hover:bg-stone-700 active:scale-[0.98] shadow-stone-900/20"
+              }`}
           >
-            Order layanan
+            {isSubmitting ? (
+              <>
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                Memproses...
+              </>
+            ) : (
+              "Order layanan"
+            )}
           </button>
         </div>
       </div>
@@ -1307,6 +1454,8 @@ interface FloatingOrderButtonProps {
   qty: number;
   note: string;
   onClick: () => void;
+  isSpecValid: boolean;
+  isSubmitting?: boolean;
 }
 
 function FloatingOrderButton({
@@ -1316,6 +1465,8 @@ function FloatingOrderButton({
   isLoggedIn,
   qty,
   onClick,
+  isSpecValid,
+  isSubmitting,
 }: FloatingOrderButtonProps) {
   const { subtotalBeforeQty, orderItems, specNumberValue } = calcOrder(
     basePrice,
@@ -1358,8 +1509,14 @@ function FloatingOrderButton({
     <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] px-4 pb-6 pt-3 bg-gradient-to-t from-stone-50 via-stone-50/95 to-transparent pointer-events-none z-40">
       <button
         type="button"
-        onClick={onClick}
-        className="pointer-events-auto w-full h-[56px] rounded-2xl bg-stone-900 text-white flex items-center justify-between px-5 hover:bg-stone-800 active:scale-[0.98] transition-all shadow-xl shadow-stone-900/25"
+        onClick={isSpecValid && !isSubmitting ? onClick : undefined}
+        disabled={!isSpecValid || isSubmitting}
+        className={`pointer-events-auto w-full h-[56px] rounded-2xl text-white flex items-center justify-between px-5 transition-all shadow-xl
+          ${
+            isSpecValid
+              ? "bg-stone-900 hover:bg-stone-800 active:scale-[0.98] shadow-stone-900/25 cursor-pointer"
+              : "bg-stone-400 shadow-stone-400/25 cursor-not-allowed opacity-70"
+          }`}
       >
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -1382,9 +1539,16 @@ function FloatingOrderButton({
               </span>
             )}
           </div>
-          <span className="font-barlow-bold text-[14px] font-bold">
-            Lihat Pesanan
-          </span>
+          <div>
+            <span className="font-barlow-bold text-[14px] font-bold block">
+              Lihat Pesanan
+            </span>
+            {!isSpecValid && (
+              <span className="font-monterat-tipis text-[10px] text-white/70 block -mt-0.5">
+                Lengkapi spesifikasi wajib
+              </span>
+            )}
+          </div>
         </div>
         <div className="text-right">
           <p className="font-barlow-bold text-[15px] font-bold">

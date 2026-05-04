@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import { usePathname } from "next/navigation";
 import { SearchBar } from "./SearchBar";
@@ -7,6 +7,6 @@ import { SearchBar } from "./SearchBar";
 export function SearchBarOnHome() {
   const pathname = usePathname();
   if (pathname !== "/") return null;
+
   return <SearchBar />;
 }
-

@@ -5,7 +5,13 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { postLogin, type LoginPayload } from "@/api/authentikasi/login/post";
 import { getUserInfo } from "@/api/authentikasi/user-info/get";
-import { setAuth, setUserProfile, setUserAvatarUrl } from "@/lib/auth";
+
+import {
+  setAuth,
+  setUserProfile,
+  setUserAvatarUrl,
+  setUserId,
+} from "@/lib/auth";
 
 type ViaType = "email" | "phone" | null;
 
@@ -16,7 +22,11 @@ export default function LoginPage() {
   const isEmail = via === "email";
   const isPhone = via === "phone";
   const userLabel = isEmail ? "Email" : isPhone ? "Phone" : "Email atau Phone";
-  const userPlaceholder = isEmail ? "contoh@email.com" : isPhone ? "08123456789" : "contoh@email.com atau 08123456789";
+  const userPlaceholder = isEmail
+    ? "contoh@email.com"
+    : isPhone
+      ? "08123456789"
+      : "contoh@email.com atau 08123456789";
   const [form, setForm] = useState<LoginPayload>({ user: "", password: "" });
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -45,6 +55,7 @@ export default function LoginPage() {
             phone: info.phone ?? "",
           });
           if (info.avatar_url) setUserAvatarUrl(info.avatar_url);
+          if (info.id) setUserId(Number(info.id));
         } catch {
           // skip if user-info gagal, profile tetap kosong
         }
@@ -59,7 +70,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f5f0eb] relative">
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(214,211,209,0.4),transparent)] pointer-events-none" aria-hidden />
+      <div
+        className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(214,211,209,0.4),transparent)] pointer-events-none"
+        aria-hidden
+      />
 
       <header className="relative z-10 flex items-center justify-between h-14 px-4 max-w-[430px] w-full mx-auto">
         <Link
@@ -67,8 +81,18 @@ export default function LoginPage() {
           className="flex items-center justify-center w-10 h-10 rounded-full text-stone-600 hover:bg-white/80 hover:text-stone-800 active:scale-95 transition-all duration-200 shadow-sm"
           aria-label="Kembali"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
         </Link>
         <span className="w-10" />
@@ -93,7 +117,11 @@ export default function LoginPage() {
               Masuk
             </h1>
             <p className="font-monterat-tipis text-center text-sm font-medium text-stone-600 mt-1.5">
-              {isEmail ? "Gunakan email yang sudah terdaftar" : isPhone ? "Gunakan Phone yang sudah terdaftar" : "Gunakan email atau Phone yang sudah terdaftar"}
+              {isEmail
+                ? "Gunakan email yang sudah terdaftar"
+                : isPhone
+                  ? "Gunakan Phone yang sudah terdaftar"
+                  : "Gunakan email atau Phone yang sudah terdaftar"}
             </p>
           </div>
 
@@ -103,14 +131,19 @@ export default function LoginPage() {
                 role="alert"
                 className="font-monterat-tipis mb-4 flex items-start gap-3 rounded-2xl bg-red-50/90 border border-red-100 px-4 py-3 text-sm font-medium text-red-800"
               >
-                <span className="flex-shrink-0 mt-0.5 text-red-500" aria-hidden>●</span>
+                <span className="flex-shrink-0 mt-0.5 text-red-500" aria-hidden>
+                  ●
+                </span>
                 <span>{error}</span>
               </div>
             )}
 
             <div className="space-y-0">
               <div className="group py-3.5 border-b border-stone-100">
-                <label htmlFor="login-user" className="font-monterat-tipis block text-[13px] font-semibold text-stone-600 mb-2 group-focus-within:text-stone-800 transition-colors">
+                <label
+                  htmlFor="login-user"
+                  className="font-monterat-tipis block text-[13px] font-semibold text-stone-600 mb-2 group-focus-within:text-stone-800 transition-colors"
+                >
                   {userLabel}
                 </label>
                 <input
@@ -127,7 +160,10 @@ export default function LoginPage() {
                 />
               </div>
               <div className="group py-3.5 border-b border-stone-100 last:border-b-0 last:pb-0">
-                <label htmlFor="login-password" className="font-monterat-tipis block text-[13px] font-semibold text-stone-600 mb-2 group-focus-within:text-stone-800 transition-colors">
+                <label
+                  htmlFor="login-password"
+                  className="font-monterat-tipis block text-[13px] font-semibold text-stone-600 mb-2 group-focus-within:text-stone-800 transition-colors"
+                >
                   Password
                 </label>
                 <input
@@ -163,7 +199,10 @@ export default function LoginPage() {
               </button>
             </div>
             <p className="font-monterat-tipis text-center text-[12px] font-medium text-stone-500 pb-2">
-              <Link href="/auth/forgot-password" className="text-stone-700 underline hover:text-stone-900 font-semibold">
+              <Link
+                href="/auth/forgot-password"
+                className="text-stone-700 underline hover:text-stone-900 font-semibold"
+              >
                 Lupa password?
               </Link>
             </p>
@@ -171,18 +210,31 @@ export default function LoginPage() {
 
           <div className="px-5 pb-6 text-center space-y-3">
             <p className="font-monterat-tipis text-[12px] font-medium text-stone-500">
-              <Link href="/auth" className="text-stone-600 underline hover:text-stone-800 font-semibold">Ganti cara masuk</Link> (Email / Phone / Google)
+              <Link
+                href="/auth"
+                className="text-stone-600 underline hover:text-stone-800 font-semibold"
+              >
+                Ganti cara masuk
+              </Link>{" "}
+              (Email / Phone / Google)
             </p>
             <Link
               href="/auth/register"
               className="font-monterat-tipis inline-flex items-center gap-1.5 rounded-full bg-stone-100 px-5 py-2.5 text-sm font-semibold text-stone-600 hover:bg-stone-200 hover:text-stone-800 active:bg-stone-300 transition-colors duration-200"
             >
               Belum punya akun?
-              <span className="font-barlow-bold font-semibold text-stone-700">Daftar</span>
+              <span className="font-barlow-bold font-semibold text-stone-700">
+                Daftar
+              </span>
             </Link>
             <p className="font-monterat-tipis text-[12px] font-medium text-stone-500">
               Baru daftar?{" "}
-              <Link href="/auth/verify-akun" className="text-stone-700 underline hover:text-stone-900 font-semibold">Verifikasi akun</Link>
+              <Link
+                href="/auth/verify-akun"
+                className="text-stone-700 underline hover:text-stone-900 font-semibold"
+              >
+                Verifikasi akun
+              </Link>
             </p>
           </div>
 

@@ -47,6 +47,7 @@ export type OrderByCode = {
   status: string;
   quantity: number;
   user: OrderUser;
+  duration: number;
   order_code: OrderCode;
   order_spesifications: OrderSpesification[];
   order_file: OrderFile | null;
@@ -68,7 +69,7 @@ export type GetOrderByCodeParams = {
  * GET /api/v1/order?code=[code] - get order by code
  */
 export async function getOrderByCode(
-  params: GetOrderByCodeParams
+  params: GetOrderByCodeParams,
 ): Promise<OrderByCodeResponse> {
   const { code, token } = params;
   const path = `/api/v1/i/order?code=${encodeURIComponent(code)}`;

@@ -3,12 +3,18 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { postAdminLogin, type AdminLoginPayload } from "@/api/authentikasi/admin-login/post";
+import {
+  postAdminLogin,
+  type AdminLoginPayload,
+} from "@/api/authentikasi/admin-login/post";
 import { setAuth } from "@/lib/auth";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [form, setForm] = useState<AdminLoginPayload>({ username: "", password: "" });
+  const [form, setForm] = useState<AdminLoginPayload>({
+    username: "",
+    password: "",
+  });
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
@@ -38,7 +44,10 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f5f0eb] relative">
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(214,211,209,0.4),transparent)] pointer-events-none" aria-hidden />
+      <div
+        className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(214,211,209,0.4),transparent)] pointer-events-none"
+        aria-hidden
+      />
 
       <header className="relative z-10 flex items-center justify-between h-14 px-4 max-w-[430px] w-full mx-auto">
         <Link
@@ -46,8 +55,18 @@ export default function AdminLoginPage() {
           className="flex items-center justify-center w-10 h-10 rounded-full text-stone-600 hover:bg-white/80 hover:text-stone-800 active:scale-95 transition-all duration-200 shadow-sm"
           aria-label="Kembali"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
         </Link>
         <span className="w-10" />
@@ -83,14 +102,19 @@ export default function AdminLoginPage() {
                 role="alert"
                 className="font-monterat-tipis mb-4 flex items-start gap-3 rounded-2xl bg-red-50/90 border border-red-100 px-4 py-3 text-sm font-medium text-red-800"
               >
-                <span className="flex-shrink-0 mt-0.5 text-red-500" aria-hidden>●</span>
+                <span className="flex-shrink-0 mt-0.5 text-red-500" aria-hidden>
+                  ●
+                </span>
                 <span>{error}</span>
               </div>
             )}
 
             <div className="space-y-0">
               <div className="group py-3.5 border-b border-stone-100">
-                <label htmlFor="admin-username" className="font-monterat-tipis block text-[13px] font-semibold text-stone-600 mb-2 group-focus-within:text-stone-800 transition-colors">
+                <label
+                  htmlFor="admin-username"
+                  className="font-monterat-tipis block text-[13px] font-semibold text-stone-600 mb-2 group-focus-within:text-stone-800 transition-colors"
+                >
                   Username
                 </label>
                 <input
@@ -108,7 +132,10 @@ export default function AdminLoginPage() {
                 />
               </div>
               <div className="group py-3.5 border-b border-stone-100 last:border-b-0 last:pb-0">
-                <label htmlFor="admin-password" className="font-monterat-tipis block text-[13px] font-semibold text-stone-600 mb-2 group-focus-within:text-stone-800 transition-colors">
+                <label
+                  htmlFor="admin-password"
+                  className="font-monterat-tipis block text-[13px] font-semibold text-stone-600 mb-2 group-focus-within:text-stone-800 transition-colors"
+                >
                   Password
                 </label>
                 <input
@@ -151,7 +178,9 @@ export default function AdminLoginPage() {
               className="font-monterat-tipis inline-flex items-center gap-1.5 rounded-full bg-stone-100 px-5 py-2.5 text-sm font-semibold text-stone-600 hover:bg-stone-200 hover:text-stone-800 active:bg-stone-300 transition-colors duration-200"
             >
               Login sebagai
-              <span className="font-barlow-bold font-semibold text-stone-700">User</span>
+              <span className="font-barlow-bold font-semibold text-stone-700">
+                User
+              </span>
             </Link>
           </div>
 

@@ -39,3 +39,14 @@ html {
 body {
   @apply antialiased text-gray-900 bg-gray-50 font-monterat-tipis;
 }
+
+
+
+/* globals.css */
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slide-up 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}

@@ -11,6 +11,12 @@ export { toggleServiceSpecificationStatus } from "./toggleSpecStatus";
 export { toggleServiceSpecificationRequired } from "./toggleSpecRequired";
 export { createServiceSpecificationValue } from "./createSpecValue";
 export { updateServiceSpecificationValue } from "./updateSpecValue";
+export { updateServiceEstimate } from "./patchEstimasiService";
+
+export type {
+  UpdateEstimateForm,
+  UpdateEstimateResponse,
+} from "./patchEstimasiService";
 
 export type {
   ServiceJasa,

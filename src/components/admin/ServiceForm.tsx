@@ -10,7 +10,9 @@ type ServiceFormProps = {
   selectedCategory: CategoryJasa | null;
   selectedCategoryId: number | null;
   onChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => void;
   onSubmit: (e: React.FormEvent) => void;
   setIconFile: (file: File | null) => void;
@@ -121,6 +123,29 @@ export function ServiceForm({
               placeholder="0"
               className="font-monterat-tipis w-full min-h-[46px] rounded-xl border border-stone-200 bg-stone-50/80 px-4 text-[15px] font-medium text-stone-900 placeholder-stone-400 focus:bg-white focus:border-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-200/80"
             />
+          </div>
+
+          <div>
+            <label
+              htmlFor="svc-duration"
+              className="font-monterat-tipis block text-[13px] font-semibold text-stone-600 mb-1.5"
+            >
+              Durasi per Unit (menit, opsional)
+            </label>
+            <input
+              id="svc-duration"
+              type="number"
+              name="duration_per_unit"
+              min={0}
+              step={1}
+              value={form.duration_per_unit === 0 ? "" : form.duration_per_unit}
+              onChange={onChange}
+              placeholder="0"
+              className="font-monterat-tipis w-full min-h-[46px] rounded-xl border border-stone-200 bg-stone-50/80 px-4 text-[15px] font-medium text-stone-900 placeholder-stone-400 focus:bg-white focus:border-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-200/80"
+            />
+            <p className="font-monterat-tipis text-[11px] text-stone-400 mt-1">
+              Kosongkan jika tidak relevan
+            </p>
           </div>
           <div className="space-y-6">
             <span className="font-monterat-tipis block text-[13px] font-semibold text-stone-600 mb-1.5">
@@ -337,4 +362,3 @@ export function ServiceForm({
     </div>
   );
 }
-

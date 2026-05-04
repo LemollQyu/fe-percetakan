@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { getToken } from "@/lib/auth";
 import type { MyOrder, OrderStatus } from "@/api/order";
 import { getMyOrders } from "@/api/order";
 import { toStaticUrl } from "@/app/helper/normalizeUrl";
+import Link from "next/link";
 
 // ─── Status config khusus tab Pesanan ────────────────────────────────────────
 
@@ -30,7 +31,7 @@ const PESANAN_TABS: {
     emptyMsg: "Tidak ada pesanan yang menunggu pembayaran.",
     icon: (
       <svg
-        className="w-4 h-4"
+        className="w-3 h-3"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -54,7 +55,7 @@ const PESANAN_TABS: {
     emptyMsg: "Tidak ada pesanan yang sedang diproses.",
     icon: (
       <svg
-        className="w-4 h-4"
+        className="w-3 h-3"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -78,7 +79,7 @@ const PESANAN_TABS: {
     emptyMsg: "Tidak ada pesanan yang selesai.",
     icon: (
       <svg
-        className="w-4 h-4"
+        className="w-3 h-3"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -295,7 +296,6 @@ function OrderCard({
     <div className="rounded-[20px] bg-white border border-stone-100 shadow-sm overflow-hidden">
       <div className={`h-[3px] w-full ${statusCfg.bar}`} />
       <div className="p-4">
-        {/* Service + badge */}
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex-1 min-w-0">
             <p className="font-barlow-bold text-[15px] font-bold text-stone-900 leading-tight truncate">
@@ -311,9 +311,26 @@ function OrderCard({
             <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`} />
             {statusCfg.label}
           </span>
+          <Link
+            href={`/order/${code}`}
+            className="inline-flex items-center justify-center w-7 h-7 p-1 rounded-full transition-all duration-200 hover:brightness-95 active:scale-95 shrink-0"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </Link>
         </div>
 
-        {/* Info pills */}
         <div className="flex gap-2 mb-3 flex-wrap">
           {totalPrice !== null && (
             <div className="flex items-center gap-1.5 rounded-xl bg-stone-50 border border-stone-100 px-3 py-1.5">
@@ -353,7 +370,6 @@ function OrderCard({
           )}
         </div>
 
-        {/* Expired */}
         {expiredAt && (
           <div className="flex items-center gap-2 mb-2.5 rounded-xl border border-amber-100 bg-amber-50 px-3 py-2">
             <svg
@@ -375,7 +391,6 @@ function OrderCard({
           </div>
         )}
 
-        {/* Note */}
         {userNote && (
           <div className="flex items-start gap-2 mb-2.5 bg-stone-50 rounded-xl px-3 py-2 border border-stone-100">
             <svg
@@ -397,7 +412,6 @@ function OrderCard({
           </div>
         )}
 
-        {/* Specs */}
         {specs.length > 0 && (
           <>
             <button
@@ -475,7 +489,6 @@ function OrderCard({
           </>
         )}
 
-        {/* File */}
         {fileUrl && (
           <>
             {isImageFile ? (
@@ -558,8 +571,9 @@ export function PesananTab() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [spinning, setSpinning] = useState(false);
 
-  // Hitung jumlah order per status (cache sederhana)
   const [counts, setCounts] = useState<Record<PesananStatusKey, number>>({
     waiting_payment: 0,
     on_progress: 0,
@@ -567,6 +581,12 @@ export function PesananTab() {
   });
 
   const activeCfg = PESANAN_TABS.find((t) => t.key === activeStatus)!;
+
+  const handleRefresh = useCallback(() => {
+    setSpinning(true);
+    setTimeout(() => setSpinning(false), 600);
+    setRefreshKey((k) => k + 1);
+  }, []);
 
   useEffect(() => {
     const token = getToken();
@@ -603,7 +623,7 @@ export function PesananTab() {
     return () => {
       cancelled = true;
     };
-  }, [activeStatus, page]);
+  }, [activeStatus, page, refreshKey]);
 
   const handleChangeStatus = (key: PesananStatusKey) => {
     setActiveStatus(key);
@@ -613,39 +633,63 @@ export function PesananTab() {
 
   return (
     <div>
-      {/* ── Status chips ── */}
-      <div className="flex gap-2 mb-5 overflow-x-auto pb-1 scrollbar-hide -mx-4 px-4">
-        {PESANAN_TABS.map((tab) => {
-          const isActive = activeStatus === tab.key;
-          return (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => handleChangeStatus(tab.key)}
-              className={`inline-flex items-center gap-2 whitespace-nowrap rounded-2xl px-4 py-2 text-[13px] font-semibold border transition-all active:scale-[0.96] shrink-0 ${
-                isActive
-                  ? "bg-stone-900 border-stone-900 text-white shadow-sm shadow-stone-900/20"
-                  : "bg-white border-stone-200 text-stone-600"
-              }`}
-            >
-              <span className={isActive ? "text-white" : tab.text}>
-                {tab.icon}
-              </span>
-              {tab.label}
-              {counts[tab.key] > 0 && (
-                <span
-                  className={`inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full text-[10px] font-bold px-1 ${
-                    isActive
-                      ? "bg-white/20 text-white"
-                      : "bg-stone-100 text-stone-600"
-                  }`}
-                >
-                  {counts[tab.key]}
+      {/* ── Status chips + Refresh ── */}
+      <div className="flex  items-center  gap-2 mb-5">
+        <div className="flex gap-2 flex-1 justify-center  overflow-x-auto pb-1 scrollbar-hide -mx-4 px-4">
+          {PESANAN_TABS.map((tab) => {
+            const isActive = activeStatus === tab.key;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => handleChangeStatus(tab.key)}
+                className={`inline-flex items-center gap-2 whitespace-nowrap rounded-2xl px-4 py-2 text-[11px] font-semibold border transition-all active:scale-[0.96] shrink-0 ${
+                  isActive
+                    ? "bg-stone-900 border-stone-900 text-white shadow-sm shadow-stone-900/20"
+                    : "bg-white border-stone-200 text-stone-600"
+                }`}
+              >
+                <span className={isActive ? "text-white" : tab.text}>
+                  {tab.icon}
                 </span>
-              )}
-            </button>
-          );
-        })}
+                {tab.label}
+                {counts[tab.key] > 0 && (
+                  <span
+                    className={`inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full text-[8px] font-bold px-1 ${
+                      isActive
+                        ? "bg-white/20 text-white"
+                        : "bg-stone-100 text-stone-600"
+                    }`}
+                  >
+                    {counts[tab.key]}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Tombol Refresh */}
+        {/* <button
+          type="button"
+          onClick={handleRefresh}
+          disabled={loading}
+          className="w-9 h-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center shrink-0 active:scale-95 transition disabled:opacity-50"
+        >
+          <svg
+            className={`w-4 h-4 text-stone-600 transition-transform duration-500 ${spinning ? "rotate-180" : ""}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+        </button> */}
       </div>
 
       {/* ── Loading skeleton ── */}
@@ -734,7 +778,6 @@ export function PesananTab() {
             ))}
           </div>
 
-          {/* Pagination */}
           <div className="flex items-center justify-between gap-3">
             <button
               type="button"

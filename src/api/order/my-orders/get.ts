@@ -6,18 +6,23 @@ import { apiOrder } from "@/lib/api";
 export type OrderStatus =
   | "created"
   | "waiting_payment"
+  | "Waiting_payment" 
   | "cancelled"
   | "paid"
   | "expired"
   | "on_progress"
   | "finished"
+  | "Finished"
   | "completed";
 
 export type MyOrder = {
   id: number | string;
   status: OrderStatus | string;
   created_at?: string;
+  service_name_snapshot: string;
+  total_price_snapshot: string;
   updated_at?: string;
+  order_code: OrderCode;
   [key: string]: unknown;
 };
 
@@ -35,6 +40,14 @@ export type GetMyOrdersParams = {
   status?: OrderStatus;
   page?: number;
   limit?: number;
+};
+
+export type OrderCode = {
+  id: number;
+  order_id: number;
+  code: string;
+  expired_at: string;
+  created_at: string;
 };
 
 export async function getMyOrders(

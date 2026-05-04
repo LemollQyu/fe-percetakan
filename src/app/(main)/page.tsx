@@ -2,6 +2,8 @@ import Image from "next/image";
 import { Suspense } from "react";
 import { HomeCtaSection } from "@/components/main/HomeCtaSection";
 import { CategoriesSection } from "@/components/main/CategoriesSection";
+import { ServicesSection } from "@/components/main/ServiceSection";
+import { SlideServiceHome } from "@/components/main/SlideServiceHome";
 
 function CategorySkeleton() {
   return (
@@ -22,8 +24,27 @@ function CategorySkeleton() {
   );
 }
 
-export default function Home() {
+function ServicesSkeleton() {
+  return (
+    <div className="space-y-2.5">
+      {[1, 2, 3].map((i) => (
+        <div
+          key={i}
+          className="flex items-start gap-3 rounded-2xl bg-white border border-stone-100 p-3 animate-pulse"
+        >
+          <div className="w-16 h-16 flex-shrink-0 rounded-xl bg-stone-200" />
+          <div className="flex-1 space-y-2 py-1">
+            <div className="h-4 bg-stone-200 rounded w-3/4" />
+            <div className="h-3 bg-stone-100 rounded w-full" />
+            <div className="h-3 bg-stone-100 rounded w-1/2" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
+export default function Home() {
   return (
     <main className="flex-1 w-full max-w-[430px] mx-auto px-4 py-6 pb-24">
       {/* Hero */}
@@ -46,9 +67,13 @@ export default function Home() {
             Nabila Fotocopy
           </h1>
           <p className="font-monterat-tipis text-sm text-stone-600 mt-1.5">
-            Cetak brosur, undangan, kartu nama, dan berbagai kebutuhan percetakan dengan hasil terbaik.
+            Cetak brosur, undangan, kartu nama, dan berbagai kebutuhan
+            percetakan dengan hasil terbaik.
           </p>
         </div>
+      </section>
+      <section className="mb-6">
+        <SlideServiceHome />
       </section>
 
       {/* Kategori Layanan - data dari API */}
@@ -58,6 +83,16 @@ export default function Home() {
         </h2>
         <Suspense fallback={<CategorySkeleton />}>
           <CategoriesSection />
+        </Suspense>
+      </section>
+
+      {/* Semua Layanan - data dari API */}
+      <section className="mb-6">
+        <h2 className="font-barlow-bold text-lg font-bold text-stone-900 mb-3">
+          Semua Layanan
+        </h2>
+        <Suspense fallback={<ServicesSkeleton />}>
+          <ServicesSection />
         </Suspense>
       </section>
 

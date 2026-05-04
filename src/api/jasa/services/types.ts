@@ -34,6 +34,19 @@ export type ServiceSpesification = {
   spesification_value?: ServiceSpesificationValue[];
 };
 
+export type ServiceCategory = {
+  id: number;
+  name: string;
+  description: string;
+  slug: string;
+  is_active: boolean;
+  meta: {
+    icon: string;
+  };
+  created_at: string;
+  updated_at: string;
+};
+
 export type ServiceJasa = {
   id: number;
   category_id: number;
@@ -44,13 +57,23 @@ export type ServiceJasa = {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  category?: ServiceCategory;
   media?: ServiceMedia[];
   spesification?: ServiceSpesification[];
+  duration_per_unit: number;
+};
+
+export type PaginationMeta = {
+  limit: number;
+  page: number;
+  total: number;
+  total_pages: number;
 };
 
 export type ServicesListResponse = {
   message: string;
   data: ServiceJasa[];
+  meta: PaginationMeta;
 };
 
 export type ServiceDetailResponse = {
