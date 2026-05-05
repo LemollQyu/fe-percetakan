@@ -3,6 +3,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { getReport } from "@/api/order";
 import type { ReportType, ReportData, ReportOrder } from "@/api/order";
+import {
+  exportReportToExcel,
+  previewReportAsHTML,
+} from "@/app/helper/exportExcel";
 
 function useToken(): string {
   if (typeof window === "undefined") return "";
@@ -145,10 +149,65 @@ export default function ReportPage() {
 
   const orders: ReportOrder[] = data?.orders ?? [];
   const hasOrders = orders.length > 0;
+  const [exporting, setExporting] = useState(false);
 
-  /* ── Column widths (shared between thead & tbody via CSS vars) ── */
+  const fetchAllOrders = async () => {
+    if (!token) return null;
+    let dateStr = toDateStr(selectedDate);
+    if (type === "week") dateStr = toDateStr(weekStart);
+    if (type === "month")
+      dateStr = toDateStr(
+        new Date(navMonth.getFullYear(), navMonth.getMonth(), 1),
+      );
+
+    const res = await getReport({
+      token,
+      type,
+      date: dateStr,
+      page: 1,
+      limit: 9999,
+    });
+    return res.data;
+  };
+
+  const handlePreview = async () => {
+    if (!data) return;
+    setExporting(true);
+    try {
+      const allData = await fetchAllOrders();
+      if (!allData) return;
+      previewReportAsHTML({
+        orders: allData.orders,
+        summary: allData.summary,
+        breakdown: allData.breakdown,
+        type,
+        period: periodLabel(),
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    if (!data) return;
+    setExporting(true);
+    try {
+      const allData = await fetchAllOrders();
+      if (!allData) return;
+      exportReportToExcel({
+        orders: allData.orders,
+        summary: allData.summary,
+        breakdown: allData.breakdown,
+        type,
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  /* ── Column widths ── */
   const COL_NO = "44px";
-  const COL_SVC = "auto"; // flex
+  const COL_SVC = "auto";
   const COL_TOTAL = "140px";
   const COL_QTY = "60px";
   const COL_DATE = "110px";
@@ -181,6 +240,49 @@ export default function ReportPage() {
         }
         .rp-title   { margin: 0 0 2px; font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
         .rp-subtitle{ margin: 0; font-size: 12.5px; color: #666; }
+
+        .rp-header-right {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+
+        /* Export buttons */
+        .rp-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 14px;
+          font-size: 12.5px;
+          font-weight: 500;
+          border-radius: 8px;
+          border: 1px solid #e5e7eb;
+          cursor: pointer;
+          font-family: inherit;
+          transition: all 0.15s;
+          white-space: nowrap;
+        }
+        .rp-btn-preview {
+          background: #fff;
+          color: #111;
+        }
+        .rp-btn-preview:hover:not(:disabled) {
+          background: #f3f4f6;
+        }
+        .rp-btn-download {
+          background: #111;
+          color: #fff;
+          border-color: #111;
+        }
+        .rp-btn-download:hover:not(:disabled) {
+          background: #333;
+          border-color: #333;
+        }
+        .rp-btn:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
 
         .rp-tabs {
           display: flex;
@@ -227,7 +329,7 @@ export default function ReportPage() {
           overflow: hidden;
         }
 
-        /* ── TABLE CONTAINER: fixed header, scrollable body ── */
+        /* ── TABLE CONTAINER ── */
         .rp-table-container {
           border: 1px solid #eaedf5;
           border-radius: 12px;
@@ -239,7 +341,6 @@ export default function ReportPage() {
           min-height: 0;
         }
 
-        /* Sticky-header wrapper */
         .rp-table-scroll {
           overflow-y: auto;
           flex: 1;
@@ -250,7 +351,6 @@ export default function ReportPage() {
         .rp-table-scroll::-webkit-scrollbar-track { background: transparent; }
         .rp-table-scroll::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 4px; }
 
-        /* Single table — thead sticks inside the scroll container */
         .rp-table {
           width: 100%;
           border-collapse: collapse;
@@ -258,7 +358,6 @@ export default function ReportPage() {
           table-layout: fixed;
         }
 
-        /* Column widths */
         .rp-table col.c-no    { width: ${COL_NO}; }
         .rp-table col.c-svc   { width: ${COL_SVC}; }
         .rp-table col.c-total { width: ${COL_TOTAL}; }
@@ -285,15 +384,12 @@ export default function ReportPage() {
         .rp-table thead th.th-qty   { text-align: center; }
         .rp-table thead th.th-date  { text-align: right; }
 
-        /* ── ORDER GROUP (one <tbody> per order for unified hover) ── */
         .rp-table .order-group tr {
           border-bottom: 1px solid #f0f2f8;
           transition: background 0.12s;
         }
         .rp-table .order-group:last-child tr:last-child { border-bottom: none; }
         .rp-table .order-group:hover tr { background: #fafafa; }
-
-        /* Remove double-border between main row & spec row */
         .rp-table .order-group tr:not(:last-child) td { border-bottom: none; }
 
         .rp-table td {
@@ -302,7 +398,6 @@ export default function ReportPage() {
           color: #111;
         }
 
-        /* ── CELL STYLES ── */
         .svc-name { font-weight: 500; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .svc-code { font-size: 10px; color: #6366f1; font-family: monospace; margin-top: 2px; }
 
@@ -325,11 +420,7 @@ export default function ReportPage() {
         .d-date { font-size: 11.5px; font-weight: 500; }
         .d-time { font-size: 10px; color: #9ca3af; font-family: monospace; margin-top: 2px; }
 
-        /* Spec-tags row: no top padding, spans all 5 cols */
-        .spec-tags-row td {
-          padding-top: 0 !important;
-          vertical-align: top;
-        }
+        .spec-tags-row td { padding-top: 0 !important; vertical-align: top; }
         .spec-tags {
           display: flex;
           flex-wrap: nowrap;
@@ -378,7 +469,6 @@ export default function ReportPage() {
           background-size: 600px 100%;
           animation: shimmer 1.4s infinite;
         }
-
 
         /* ── PAGINATION ── */
         .rp-pagination {
@@ -558,16 +648,63 @@ export default function ReportPage() {
             <h1 className="rp-title">Laporan Penjualan</h1>
             <p className="rp-subtitle">{periodLabel()}</p>
           </div>
-          <div className="rp-tabs">
-            {(["day", "week", "month"] as ReportType[]).map((t) => (
-              <button
-                key={t}
-                onClick={() => setType(t)}
-                className={`rp-tab ${type === t ? "active" : ""}`}
+
+          <div className="rp-header-right">
+            {/* Export buttons */}
+            <button
+              className="rp-btn rp-btn-preview"
+              onClick={handlePreview}
+              disabled={!data || !hasOrders || exporting}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                {t === "day" ? "Hari" : t === "week" ? "Minggu" : "Bulan"}
-              </button>
-            ))}
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              {exporting ? "Memuat..." : "Preview"}
+            </button>
+            <button
+              className="rp-btn rp-btn-download"
+              onClick={handleDownload}
+              disabled={!data || !hasOrders || exporting}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              {exporting ? "Memuat..." : "Download Excel"}
+            </button>
+
+            {/* Period tabs */}
+            <div className="rp-tabs">
+              {(["day", "week", "month"] as ReportType[]).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setType(t)}
+                  className={`rp-tab ${type === t ? "active" : ""}`}
+                >
+                  {t === "day" ? "Hari" : t === "week" ? "Minggu" : "Bulan"}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -579,7 +716,7 @@ export default function ReportPage() {
 
             <div className="rp-table-container">
               <div className="rp-table-scroll">
-                {/* Skeleton — same <table> + <colgroup> as real data so column widths are identical */}
+                {/* Skeleton */}
                 {loading && (
                   <table className="rp-table">
                     <colgroup>
@@ -604,14 +741,12 @@ export default function ReportPage() {
                           key={i}
                           style={{ borderBottom: "1px solid #f0f2f8" }}
                         >
-                          {/* No */}
                           <td>
                             <div
                               className="skeleton-bar"
                               style={{ width: 16, height: 11 }}
                             />
                           </td>
-                          {/* Layanan */}
                           <td>
                             <div
                               className="skeleton-bar"
@@ -643,14 +778,12 @@ export default function ReportPage() {
                               </div>
                             )}
                           </td>
-                          {/* Total */}
                           <td style={{ textAlign: "right" }}>
                             <div
                               className="skeleton-bar"
                               style={{ width: 80, marginLeft: "auto" }}
                             />
                           </td>
-                          {/* Qty */}
                           <td style={{ textAlign: "center" }}>
                             <div
                               className="skeleton-bar"
@@ -662,7 +795,6 @@ export default function ReportPage() {
                               }}
                             />
                           </td>
-                          {/* Selesai */}
                           <td style={{ textAlign: "right" }}>
                             <div
                               className="skeleton-bar"
@@ -688,7 +820,7 @@ export default function ReportPage() {
                   </table>
                 )}
 
-                {/* Real table — single table with sticky thead */}
+                {/* Real table */}
                 {!loading && data && (
                   <table className="rp-table">
                     <colgroup>
@@ -717,7 +849,6 @@ export default function ReportPage() {
                           (order.order_spesifications?.length ?? 0) > 0;
 
                         return (
-                          /* One <tbody> per order → hover highlights both rows together */
                           <tbody key={order.id} className="order-group">
                             <tr>
                               <td>{index + 1}</td>
@@ -744,10 +875,8 @@ export default function ReportPage() {
                                 <div className="d-time">{timeStr}</div>
                               </td>
                             </tr>
-
                             {hasSpec && (
                               <tr className="spec-tags-row">
-                                {/* Skip "No" column, span the remaining 4 */}
                                 <td />
                                 <td colSpan={4}>
                                   <div className="spec-tags">

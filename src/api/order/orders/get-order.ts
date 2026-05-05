@@ -21,6 +21,7 @@ export type Order = {
   user_note: string;
   status: OrderStatus | string;
   quantity: number;
+  estimated_duration: number;
   user: {
     id: number;
     name: string;
@@ -84,16 +85,16 @@ function toGoStatus(status: string): string {
 }
 
 export async function getOrders(
-  params: GetOrdersParams
+  params: GetOrdersParams,
 ): Promise<OrdersResponse> {
   const { token, status, page = 1, limit = 10 } = params;
 
   const search = new URLSearchParams();
-  
-  // Gunakan toGoStatus jika kamu ingin memastikan input aman 
+
+  // Gunakan toGoStatus jika kamu ingin memastikan input aman
   // (misal status datang dari input text/url yang mungkin lowercase)
   if (status) search.set("status", toGoStatus(status));
-  
+
   search.set("page", String(page));
   search.set("limit", String(limit));
 

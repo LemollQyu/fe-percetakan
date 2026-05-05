@@ -441,7 +441,7 @@ export function AdminHeader() {
   const navMenus = [
     { label: "Kelola", href: "/admin/kelola" },
     { label: "Dashboard", href: "/admin/dashboard" },
-    { label: "Antrean", href: "/admin/queue" },
+    { label: "Pesanan", href: "/admin/queue" },
   ];
 
   const cardRef = useRef<HTMLDivElement>(

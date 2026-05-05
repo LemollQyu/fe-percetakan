@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getToken } from "@/lib/auth";
 import { getOrderByCode, uploadOrderFile } from "@/api/order";
+import { formatDuration } from "@/app/helper/formatDuration";
 
 import { getPaymentMethods } from "@/api/payment";
 import type { PaymentMethod } from "@/api/payment";
@@ -67,6 +68,7 @@ type OrderDetail = {
   total_price_snapshot: number;
   user_note: string;
   status: string;
+  estimated_duration: number;
   quantity: number;
   order_code: OrderCode;
   order_spesifications: OrderSpesification[];
@@ -480,6 +482,9 @@ export default function OrderDetailPage() {
   const params = useParams();
   const router = useRouter();
   const code = params?.order_code as string;
+  const [paymentType, setPaymentType] = useState<"manual" | "otomatis" | null>(
+    null,
+  );
 
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -554,6 +559,7 @@ export default function OrderDetailPage() {
 
   async function handleOpenCheckout() {
     setShowMethodSheet(true);
+    setPaymentType(null);
     if (methods.length > 0) return; // sudah di-fetch sebelumnya
     setMethodsLoading(true);
     try {
@@ -853,6 +859,7 @@ export default function OrderDetailPage() {
           </div>
         )}
         <InfoRow label="Tanggal Order" value={formatDate(order.created_at)} />
+
         {order.order_code?.expired_at && (
           <InfoRow
             label="Berlaku Hingga"
@@ -864,6 +871,12 @@ export default function OrderDetailPage() {
           />
         )}
         <InfoRow label="Kode Order" value={order.order_code?.code} mono />
+        {order.estimated_duration > 0 && (
+          <InfoRow
+            label="Estimasi Durasi"
+            value={formatDuration(order.estimated_duration)}
+          />
+        )}
       </Card>
 
       {/* ── Spesifikasi ── */}
@@ -1110,100 +1123,192 @@ export default function OrderDetailPage() {
 
             {/* Methods list */}
             <div
-              className="px-4 py-3 space-y-2 overflow-y-auto"
+              className="px-4 py-3 overflow-y-auto"
               style={{ maxHeight: "60dvh" }}
             >
-              {methodsLoading ? (
-                <div className="space-y-2 py-2">
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="h-[64px] rounded-2xl bg-stone-100 animate-pulse"
-                    />
-                  ))}
-                </div>
-              ) : methods.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-10 gap-2">
-                  <p className="text-[13px] font-semibold text-stone-500">
-                    Metode tidak tersedia
-                  </p>
+              {paymentType === null ? (
+                /* ── Step 1: Pilih tipe ── */
+                <div className="grid grid-cols-2 gap-3 py-2">
+                  {/* Manual */}
+                  <button
+                    type="button"
+                    onClick={() => setPaymentType("manual")}
+                    className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 border-stone-200 bg-white hover:border-stone-900 hover:bg-stone-50 active:scale-[0.98] transition-all"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center">
+                      <svg
+                        className="w-5 h-5 text-stone-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                        />
+                      </svg>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[13px] font-bold text-stone-900">
+                        Manual
+                      </p>
+                      <p className="text-[10px] text-stone-400 mt-0.5">
+                        Transfer & e-wallet
+                      </p>
+                    </div>
+                  </button>
+
+                  {/* Otomatis - coming soon */}
+                  <div className="relative flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 border-stone-100 bg-stone-50 opacity-60 cursor-not-allowed">
+                    <div className="w-10 h-10 rounded-xl bg-stone-200 flex items-center justify-center">
+                      <svg
+                        className="w-5 h-5 text-stone-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 10V3L4 14h7v7l9-11h-7z"
+                        />
+                      </svg>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[13px] font-bold text-stone-400">
+                        Otomatis
+                      </p>
+                      <p className="text-[10px] text-stone-400 mt-0.5">
+                        Coming soon
+                      </p>
+                    </div>
+                    <span className="absolute top-2 right-2 text-[9px] font-bold bg-stone-200 text-stone-500 rounded-full px-2 py-0.5">
+                      Soon
+                    </span>
+                  </div>
                 </div>
               ) : (
-                methods.map((method) => {
-                  const isSelected = selectedMethod === method.payment_method;
-                  return (
-                    <button
-                      key={method.id}
-                      type="button"
-                      onClick={() => setSelectedMethod(method.payment_method)}
-                      className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl border-2 transition-all active:scale-[0.99]
-                  ${
-                    isSelected
-                      ? "border-stone-900 bg-stone-50"
-                      : "border-stone-100 bg-white hover:border-stone-200"
-                  }`}
+                /* ── Step 2: List metode (existing code) ── */
+                <div className="space-y-2">
+                  {/* tombol back */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPaymentType(null);
+                      setSelectedMethod(null); // ← tambah ini
+                    }}
+                    className="flex items-center gap-1.5 text-[12px] font-semibold text-stone-400 hover:text-stone-700 transition mb-1"
+                  >
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      {/* Icon */}
-                      <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center shrink-0 overflow-hidden">
-                        {method.url_icon ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={(() => {
-                              try {
-                                const parsed = new URL(
-                                  method.url_icon.startsWith("http")
-                                    ? method.url_icon
-                                    : `http://${method.url_icon}`,
-                                );
-                                return `/api/proxy/paymentmc${parsed.pathname}`;
-                              } catch {
-                                return `/api/proxy/paymentmc/${method.url_icon}`;
-                              }
-                            })()}
-                            alt={method.payment_method}
-                            className="w-6 h-6 object-contain"
-                          />
-                        ) : (
-                          <svg
-                            className="w-5 h-5 text-stone-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2.5}
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
+                    Kembali
+                  </button>
+
+                  {methodsLoading ? (
+                    <div className="space-y-2 py-2">
+                      {[1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          className="h-[64px] rounded-2xl bg-stone-100 animate-pulse"
+                        />
+                      ))}
+                    </div>
+                  ) : methods.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-10 gap-2">
+                      <p className="text-[13px] font-semibold text-stone-500">
+                        Metode tidak tersedia
+                      </p>
+                    </div>
+                  ) : (
+                    methods.map((method) => {
+                      const isSelected =
+                        selectedMethod === method.payment_method;
+                      return (
+                        <button
+                          key={method.id}
+                          type="button"
+                          onClick={() =>
+                            setSelectedMethod(method.payment_method)
+                          }
+                          className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl border-2 transition-all active:scale-[0.99]
+        ${isSelected ? "border-stone-900 bg-stone-50" : "border-stone-100 bg-white hover:border-stone-200"}`}
+                        >
+                          {/* Icon */}
+                          <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center shrink-0 overflow-hidden">
+                            {method.url_icon ? (
+                              <img
+                                src={(() => {
+                                  try {
+                                    const parsed = new URL(
+                                      method.url_icon.startsWith("http")
+                                        ? method.url_icon
+                                        : `http://${method.url_icon}`,
+                                    );
+                                    return `/api/proxy/paymentmc${parsed.pathname}`;
+                                  } catch {
+                                    return `/api/proxy/paymentmc/${method.url_icon}`;
+                                  }
+                                })()}
+                                alt={method.payment_method}
+                                className="w-6 h-6 object-contain"
+                              />
+                            ) : (
+                              <svg
+                                className="w-5 h-5 text-stone-400"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                                />
+                              </svg>
+                            )}
+                          </div>
+
+                          {/* Info */}
+                          <div className="flex-1 text-left min-w-0">
+                            <p className="text-[13px] font-bold text-stone-900">
+                              {method.payment_method}
+                            </p>
+                            {method.number_payment && (
+                              <p className="text-[11px] text-stone-400 mt-0.5 font-mono truncate">
+                                {method.number_payment}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Radio */}
+                          <div
+                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all
+          ${isSelected ? "border-stone-900 bg-stone-900" : "border-stone-300"}`}
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                            />
-                          </svg>
-                        )}
-                      </div>
-
-                      {/* Info */}
-                      <div className="flex-1 text-left min-w-0">
-                        <p className="text-[13px] font-bold text-stone-900">
-                          {method.payment_method}
-                        </p>
-                        {method.number_payment && (
-                          <p className="text-[11px] text-stone-400 mt-0.5 font-mono truncate">
-                            {method.number_payment}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Radio */}
-                      <div
-                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all
-                  ${isSelected ? "border-stone-900 bg-stone-900" : "border-stone-300"}`}
-                      >
-                        {isSelected && (
-                          <div className="w-2 h-2 rounded-full bg-white" />
-                        )}
-                      </div>
-                    </button>
-                  );
-                })
+                            {isSelected && (
+                              <div className="w-2 h-2 rounded-full bg-white" />
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
               )}
             </div>
 

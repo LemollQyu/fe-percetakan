@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getToken } from "@/lib/auth";
 import { getOrderByCode } from "@/api/order";
@@ -13,10 +13,10 @@ import { getPaymentProof } from "@/api/payment";
 import type { PaymentProof } from "@/api/payment";
 import { toStaticUrl } from "@/app/helper/normalizeUrl";
 import Link from "next/link";
+import { formatDuration } from "@/app/helper/formatDuration";
 
 // ─── Status config ────────────────────────────────────────────────────────────
 
-// Status yang sudah pasti ada bukti pembayaran
 const STATUS_WITH_PROOF: StatusKey[] = [
   "paid",
   "on_progress",
@@ -125,8 +125,6 @@ function getStatusConfig(rawStatus: string) {
   );
 }
 
-// ─── Timeline steps ───────────────────────────────────────────────────────────
-
 const TIMELINE_STEPS: { key: StatusKey; label: string; desc: string }[] = [
   { key: "created", label: "Order Dibuat", desc: "Pesanan berhasil dibuat" },
   {
@@ -151,8 +149,6 @@ const TIMELINE_STEPS: { key: StatusKey; label: string; desc: string }[] = [
   },
   { key: "completed", label: "Completed", desc: "Pesanan selesai & diterima" },
 ];
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function formatRupiah(amount: number) {
   return new Intl.NumberFormat("id-ID", {
@@ -325,8 +321,6 @@ function FilePreviewModal({
   );
 }
 
-// ─── Section wrapper ──────────────────────────────────────────────────────────
-
 function Section({
   title,
   icon,
@@ -394,32 +388,7 @@ function PaymentProofSection({ paymentID }: { paymentID: number }) {
           />
         </svg>
       }
-      // badge={
-      //   proof?.proof_url ? (
-      //     <a
-      //       href={fullUrl}
-      //       download
-      //       className="inline-flex items-center gap-1 rounded-xl bg-stone-100 border border-stone-200 px-2.5 py-1 text-[11px] font-semibold text-stone-700 active:scale-95 transition hover:bg-stone-200"
-      //     >
-      //       <svg
-      //         className="w-3 h-3"
-      //         fill="none"
-      //         stroke="currentColor"
-      //         viewBox="0 0 24 24"
-      //       >
-      //         <path
-      //           strokeLinecap="round"
-      //           strokeLinejoin="round"
-      //           strokeWidth={2}
-      //           d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-      //         />
-      //       </svg>
-      //       Download
-      //     </a>
-      //   ) : undefined
-      // }
     >
-      {/* Loading skeleton */}
       {loading && (
         <div className="space-y-3 animate-pulse">
           <div
@@ -430,8 +399,6 @@ function PaymentProofSection({ paymentID }: { paymentID: number }) {
           <div className="h-3 bg-stone-100 rounded-lg w-1/2" />
         </div>
       )}
-
-      {/* Error */}
       {!loading && error && (
         <div className="flex items-center gap-2 rounded-xl bg-red-50 border border-red-100 px-3 py-2.5">
           <svg
@@ -450,11 +417,8 @@ function PaymentProofSection({ paymentID }: { paymentID: number }) {
           <p className="text-[11px] text-red-600">{error}</p>
         </div>
       )}
-
-      {/* Data bukti */}
       {!loading && !error && proof && (
         <div className="space-y-3">
-          {/* Gambar bukti */}
           {isImage ? (
             <div
               className="relative w-full rounded-2xl overflow-hidden bg-stone-100 cursor-pointer active:scale-[0.99] transition"
@@ -486,7 +450,6 @@ function PaymentProofSection({ paymentID }: { paymentID: number }) {
               </div>
             </div>
           ) : (
-            // Non-image file
             <div className="flex items-center gap-3 p-3 rounded-xl bg-stone-50 border border-stone-100">
               <div className="w-10 h-10 rounded-xl bg-stone-200 flex items-center justify-center shrink-0">
                 <svg
@@ -533,10 +496,7 @@ function PaymentProofSection({ paymentID }: { paymentID: number }) {
               </a>
             </div>
           )}
-
-          {/* Meta info */}
           <div className="space-y-1.5">
-            {/* Catatan user */}
             {proof.note && (
               <div className="flex items-start gap-2 bg-stone-50 rounded-xl px-3 py-2.5 border border-stone-100">
                 <svg
@@ -557,16 +517,12 @@ function PaymentProofSection({ paymentID }: { paymentID: number }) {
                 </p>
               </div>
             )}
-
-            {/* Waktu upload */}
             <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-stone-50 border border-stone-100">
               <span className="text-[11px] text-stone-400">Dikirim pada</span>
               <span className="text-[12px] font-semibold text-stone-800">
                 {formatDate(proof.uploaded_at)}
               </span>
             </div>
-
-            {/* Waktu verifikasi */}
             {proof.verified_at && (
               <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-100">
                 <span className="text-[11px] text-emerald-600">
@@ -578,8 +534,6 @@ function PaymentProofSection({ paymentID }: { paymentID: number }) {
               </div>
             )}
           </div>
-
-          {/* Tombol lihat penuh (hanya gambar) */}
           {isImage && (
             <button
               type="button"
@@ -604,8 +558,6 @@ function PaymentProofSection({ paymentID }: { paymentID: number }) {
           )}
         </div>
       )}
-
-      {/* Tidak ada bukti */}
       {!loading && !error && !proof && (
         <div className="flex flex-col items-center justify-center py-6 gap-2 text-stone-400">
           <svg
@@ -624,8 +576,6 @@ function PaymentProofSection({ paymentID }: { paymentID: number }) {
           <p className="text-[12px]">Bukti pembayaran tidak tersedia.</p>
         </div>
       )}
-
-      {/* Preview modal */}
       {previewOpen && proof?.proof_url && (
         <FilePreviewModal
           url={proof.proof_url}
@@ -648,25 +598,29 @@ export default function OrderDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
-
   const [payment, setPayment] = useState<PaymentInner | null>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [showCompletedConfirm, setShowCompletedConfirm] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [completeError, setCompleteError] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [showCancelPaymentConfirm, setShowCancelPaymentConfirm] =
+    useState(false);
+  const [cancellingPayment, setCancellingPayment] = useState(false);
+  const [cancelPaymentError, setCancelPaymentError] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!code) return;
     const token = getToken();
-
     setLoading(true);
     setError(null);
-
     getOrderByCode({ code, token: token ?? undefined })
       .then((res) => {
         setOrder(res.data);
-
-        // Fetch payment kalau status bukan created
         if (res.data.status.toLowerCase() !== "created") {
           const t = getToken();
           if (t) {
@@ -688,17 +642,6 @@ export default function OrderDetailPage() {
 
   const showPaymentProof = STATUS_WITH_PROOF.includes(
     order?.status.toLowerCase() as StatusKey,
-  );
-
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
-
-  const [showCancelPaymentConfirm, setShowCancelPaymentConfirm] =
-    useState(false);
-  const [cancellingPayment, setCancellingPayment] = useState(false);
-  const [cancelPaymentError, setCancelPaymentError] = useState<string | null>(
-    null,
   );
 
   async function handleCompleteOrder() {
@@ -751,7 +694,7 @@ export default function OrderDetailPage() {
       setCancellingPayment(false);
     }
   }
-  // ── Loading ──
+
   if (loading) {
     return (
       <main className="flex-1 w-full max-w-[430px] mx-auto px-4 py-6 pb-28">
@@ -781,7 +724,6 @@ export default function OrderDetailPage() {
     );
   }
 
-  // ── Error ──
   if (error || !order) {
     return (
       <main className="flex-1 w-full max-w-[430px] mx-auto px-4 py-6 pb-28">
@@ -840,14 +782,16 @@ export default function OrderDetailPage() {
   const ft = order.order_file?.file_type ?? ".pdf";
   const isImageFile = /\.(png|jpe?g|gif|webp|svg)$/i.test(ft);
   const hasPayment = order.status.toLowerCase() !== "created";
-
   const isCreated = order.status.toLowerCase() === "created";
   const isWaitingPayment = order.status.toLowerCase() === "waiting_payment";
   const isFinished = order.status.toLowerCase() === "finished";
 
+  // ── Kondisi timer ──
+  const isOnProgress = order.status.toLowerCase() === "on_progress";
+
   return (
     <main className="flex-1 w-full max-w-[430px] mx-auto px-4 py-6 pb-28">
-      {/* ── Back + Header ── */}
+      {/* Back + Header */}
       <div className="mb-5">
         <button
           type="button"
@@ -869,7 +813,6 @@ export default function OrderDetailPage() {
           </svg>
           <span className="text-[13px] font-semibold">Kembali</span>
         </button>
-
         <div className="flex items-start justify-between gap-2">
           <div>
             <h1 className="font-barlow-bold text-xl font-bold text-stone-900 leading-tight">
@@ -889,7 +832,7 @@ export default function OrderDetailPage() {
       </div>
 
       <div className="space-y-3">
-        {/* ── Info Order ── */}
+        {/* Info Order */}
         <div className="rounded-[20px] bg-white border border-stone-100 shadow-sm overflow-hidden">
           <div className={`h-[3px] w-full ${statusCfg.bar}`} />
           <div className="p-4">
@@ -928,8 +871,6 @@ export default function OrderDetailPage() {
                 </span>
               </div>
             </div>
-
-            {/* Total */}
             <div className="mt-3 flex items-center justify-between rounded-xl bg-stone-900 px-4 py-3">
               <span className="text-[12px] text-stone-400">
                 Total Pembayaran
@@ -938,8 +879,6 @@ export default function OrderDetailPage() {
                 {formatRupiah(order.total_price_snapshot)}
               </span>
             </div>
-
-            {/* User note */}
             {order.user_note && (
               <div className="mt-3 flex items-start gap-2 bg-stone-50 rounded-xl px-3 py-2.5 border border-stone-100">
                 <svg
@@ -960,8 +899,6 @@ export default function OrderDetailPage() {
                 </p>
               </div>
             )}
-
-            {/* Expired at */}
             {order.order_code?.expired_at && (
               <div className="mt-3 flex items-center gap-2 rounded-xl border border-amber-100 bg-amber-50 px-3 py-2">
                 <svg
@@ -977,15 +914,16 @@ export default function OrderDetailPage() {
                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span className="text-[11px] text-amber-700 font-medium">
-                  Berlaku hingga: {formatDate(order.order_code.expired_at)}
-                </span>
+                {order.status === "On_progress" && (
+                  <span className="text-[11px] text-amber-700 font-medium">
+                    Estimasi : {formatDuration(order.estimated_duration)}
+                  </span>
+                )}
               </div>
             )}
           </div>
         </div>
-
-        {/* ── Timeline Status ── */}
+        {/* Timeline Status */}
         {!isCancelledOrExpired && (
           <Section
             title="Status Pesanan"
@@ -1012,18 +950,11 @@ export default function OrderDetailPage() {
                 const isDone = currentStep >= stepCfg.step;
                 const isCurrent = currentStep === stepCfg.step;
                 const isLast = idx === TIMELINE_STEPS.length - 1;
-
                 return (
                   <div key={step.key} className="flex gap-3">
                     <div className="flex flex-col items-center">
                       <div
-                        className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border-2 transition-all ${
-                          isCurrent
-                            ? `${stepCfg.dot} border-transparent`
-                            : isDone
-                              ? "bg-stone-900 border-stone-900"
-                              : "bg-white border-stone-200"
-                        }`}
+                        className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border-2 transition-all ${isCurrent ? `${stepCfg.dot} border-transparent` : isDone ? "bg-stone-900 border-stone-900" : "bg-white border-stone-200"}`}
                       >
                         {isDone && !isCurrent ? (
                           <svg
@@ -1051,22 +982,14 @@ export default function OrderDetailPage() {
                         />
                       )}
                     </div>
-
-                    <div className={`pb-4 flex-1 ${isLast ? "pb-0" : ""}`}>
+                    <div className={`pb-4 ${isLast ? "" : ""}`}>
                       <p
-                        className={`text-[13px] font-semibold leading-tight ${isCurrent ? statusCfg.text : isDone ? "text-stone-900" : "text-stone-400"}`}
+                        className={`text-[13px] font-semibold ${isCurrent ? statusCfg.text : isDone ? "text-stone-900" : "text-stone-300"}`}
                       >
                         {step.label}
-                        {isCurrent && (
-                          <span
-                            className={`ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold border ${statusCfg.badge} ${statusCfg.text}`}
-                          >
-                            Sekarang
-                          </span>
-                        )}
                       </p>
                       <p
-                        className={`text-[11px] mt-0.5 ${isDone ? "text-stone-500" : "text-stone-300"}`}
+                        className={`text-[11px] mt-0.5 ${isCurrent ? "text-stone-500" : isDone ? "text-stone-400" : "text-stone-200"}`}
                       >
                         {step.desc}
                       </p>
@@ -1078,61 +1001,7 @@ export default function OrderDetailPage() {
           </Section>
         )}
 
-        {/* Cancelled / Expired notice */}
-        {isCancelledOrExpired && (
-          <div
-            className={`rounded-[20px] border p-4 flex items-center gap-3 ${
-              order.status.toLowerCase() === "cancelled"
-                ? "bg-red-50 border-red-100"
-                : "bg-stone-50 border-stone-200"
-            }`}
-          >
-            <div
-              className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                order.status.toLowerCase() === "cancelled"
-                  ? "bg-red-100"
-                  : "bg-stone-100"
-              }`}
-            >
-              <svg
-                className={`w-5 h-5 ${order.status.toLowerCase() === "cancelled" ? "text-red-400" : "text-stone-400"}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d={
-                    order.status.toLowerCase() === "cancelled"
-                      ? "M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                      : "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  }
-                />
-              </svg>
-            </div>
-            <div>
-              <p
-                className={`text-sm font-semibold ${order.status.toLowerCase() === "cancelled" ? "text-red-700" : "text-stone-700"}`}
-              >
-                Pesanan{" "}
-                {order.status.toLowerCase() === "cancelled"
-                  ? "Dibatalkan"
-                  : "Expired"}
-              </p>
-              <p
-                className={`text-xs mt-0.5 ${order.status.toLowerCase() === "cancelled" ? "text-red-500" : "text-stone-500"}`}
-              >
-                {order.status.toLowerCase() === "cancelled"
-                  ? "Pesanan ini telah dibatalkan."
-                  : "Batas waktu pembayaran telah habis."}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* ── Spesifikasi ── */}
+        {/* Spesifikasi */}
         {order.order_spesifications?.length > 0 && (
           <Section
             title="Spesifikasi"
@@ -1147,13 +1016,7 @@ export default function OrderDetailPage() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
                 />
               </svg>
             }
@@ -1162,21 +1025,17 @@ export default function OrderDetailPage() {
               {order.order_spesifications.map((spec) => (
                 <div
                   key={spec.id}
-                  className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-stone-50 border border-stone-100"
+                  className="flex items-center justify-between rounded-xl bg-stone-50 border border-stone-100 px-3 py-2.5"
                 >
-                  <span className="text-[12px] text-stone-500">
+                  <span className="text-[11px] text-stone-500">
                     {spec.spesification_name_snapshot}
                   </span>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[12px] font-semibold text-stone-900">
-                      {spec.value_snapshot === "true"
-                        ? "Ya"
-                        : spec.value_snapshot === "false"
-                          ? "Tidak"
-                          : spec.value_snapshot}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[12px] font-semibold text-stone-800">
+                      {spec.value_snapshot}
                     </span>
                     {spec.additional_price_snapshot > 0 && (
-                      <span className="text-[10px] text-stone-400 bg-stone-100 rounded-lg px-1.5 py-0.5">
+                      <span className="text-[10px] text-emerald-600 bg-emerald-50 rounded-lg px-2 py-0.5 font-semibold">
                         +{formatRupiah(spec.additional_price_snapshot)}
                       </span>
                     )}
@@ -1187,120 +1046,10 @@ export default function OrderDetailPage() {
           </Section>
         )}
 
-        {/* ── Bukti Pembayaran ── */}
-        {showPaymentProof && payment && (
-          <PaymentProofSection paymentID={payment.id} />
-        )}
-
-        {/* ── Informasi Pembayaran ── */}
-        {hasPayment && (
-          <Section
-            title="Informasi Pembayaran"
-            icon={
-              <svg
-                className="w-3.5 h-3.5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                />
-              </svg>
-            }
-          >
-            {paymentLoading ? (
-              <div className="space-y-2 animate-pulse">
-                <div className="h-8 bg-stone-100 rounded-xl w-full" />
-                <div className="h-8 bg-stone-100 rounded-xl w-full" />
-                <div className="h-8 bg-stone-100 rounded-xl w-full" />
-              </div>
-            ) : payment ? (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-stone-50 border border-stone-100">
-                  <span className="text-[11px] text-stone-400">
-                    Kode Pembayaran
-                  </span>
-                  <span className="text-[12px] font-mono font-semibold text-stone-800">
-                    {payment.payment_codes?.[0]?.code ?? "-"}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-stone-50 border border-stone-100">
-                  <span className="text-[11px] text-stone-400">Metode</span>
-                  <span className="text-[12px] font-semibold text-stone-800">
-                    {payment.payment_method}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-stone-50 border border-stone-100">
-                  <span className="text-[11px] text-stone-400">Total</span>
-                  <span className="text-[12px] font-semibold text-stone-800">
-                    {formatRupiah(payment.amount)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-stone-50 border border-stone-100">
-                  <span className="text-[11px] text-stone-400">
-                    Status Bayar
-                  </span>
-                  <span
-                    className={`text-[12px] font-semibold ${
-                      payment.status.toLowerCase() === "paid"
-                        ? "text-emerald-600"
-                        : payment.status.toLowerCase() === "expired"
-                          ? "text-stone-400"
-                          : payment.status.toLowerCase() === "cancelled"
-                            ? "text-red-500"
-                            : "text-amber-600"
-                    }`}
-                  >
-                    {payment.status}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-stone-50 border border-stone-100">
-                  <span className="text-[11px] text-stone-400">
-                    Berlaku Hingga
-                  </span>
-                  <span className="text-[12px] font-semibold text-stone-800">
-                    {payment.payment_codes?.[0]?.expired_at
-                      ? formatDate(payment.payment_codes[0].expired_at)
-                      : "-"}
-                  </span>
-                </div>
-                {payment.paid_at && (
-                  <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-100">
-                    <span className="text-[11px] text-emerald-600">
-                      Dibayar Pada
-                    </span>
-                    <span className="text-[12px] font-semibold text-emerald-700">
-                      {formatDate(payment.paid_at)}
-                    </span>
-                  </div>
-                )}
-                {payment.approved_at && (
-                  <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-100">
-                    <span className="text-[11px] text-emerald-600">
-                      Dikonfirmasi Pada
-                    </span>
-                    <span className="text-[12px] font-semibold text-emerald-700">
-                      {formatDate(payment.approved_at)}
-                    </span>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <p className="text-[12px] text-stone-400 text-center py-2">
-                Data pembayaran tidak tersedia.
-              </p>
-            )}
-          </Section>
-        )}
-
-        {/* ── File / Dokumen ── */}
+        {/* File Order */}
         {fileUrl && (
           <Section
-            title="File Terlampir"
+            title="File Order"
             icon={
               <svg
                 className="w-3.5 h-3.5"
@@ -1318,71 +1067,37 @@ export default function OrderDetailPage() {
             }
           >
             {isImageFile ? (
-              <div className="space-y-2">
-                <div
-                  className="relative w-full rounded-2xl overflow-hidden bg-stone-100 cursor-pointer active:scale-[0.99] transition"
-                  style={{ aspectRatio: "16/9" }}
-                  onClick={() => setPreviewOpen(true)}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={toStaticUrl(fileUrl)}
-                    alt="File order"
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition">
-                    <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
-                      <svg
-                        className="w-5 h-5 text-stone-700"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                        />
-                      </svg>
-                    </div>
+              <div
+                className="relative w-full rounded-2xl overflow-hidden bg-stone-100 cursor-pointer active:scale-[0.99] transition"
+                style={{ aspectRatio: "4/3" }}
+                onClick={() => setPreviewOpen(true)}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={toStaticUrl(fileUrl)}
+                  alt="File order"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/0 hover:bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition">
+                  <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
+                    <svg
+                      className="w-5 h-5 text-stone-700"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      />
+                    </svg>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setPreviewOpen(true)}
-                  className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-stone-50 border border-stone-200 py-2 text-[12px] font-semibold text-stone-600 active:scale-[0.99] transition"
-                >
-                  <svg
-                    className="w-3.5 h-3.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
-                  Lihat ukuran penuh
-                </button>
-                {previewOpen && (
-                  <FilePreviewModal
-                    url={fileUrl}
-                    fileType={ft}
-                    onClose={() => setPreviewOpen(false)}
-                  />
-                )}
               </div>
             ) : (
-              <a
-                href={toStaticUrl(fileUrl)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 p-3 rounded-xl bg-stone-50 border border-stone-100 active:scale-[0.99] transition"
-              >
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-stone-50 border border-stone-100">
                 <div className="w-10 h-10 rounded-xl bg-stone-200 flex items-center justify-center shrink-0">
                   <svg
                     className="w-5 h-5 text-stone-600"
@@ -1399,63 +1114,20 @@ export default function OrderDetailPage() {
                   </svg>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-semibold text-stone-800">
-                    Dokumen terlampir
+                  <p className="text-[12px] font-semibold text-stone-800 truncate">
+                    {fileUrl.split("/").pop()}
                   </p>
                   <p className="text-[10px] text-stone-400 uppercase font-semibold mt-0.5">
-                    {ft}
+                    {ft.replace(".", "")}
                   </p>
                 </div>
-                <svg
-                  className="w-4 h-4 text-stone-400 shrink-0"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+                <button
+                  type="button"
+                  onClick={() => setPreviewOpen(true)}
+                  className="w-8 h-8 rounded-xl bg-stone-100 flex items-center justify-center active:scale-95 transition"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                  />
-                </svg>
-              </a>
-            )}
-          </Section>
-        )}
-
-        {/* ── Info User ── */}
-        {order.user && (
-          <Section
-            title="Informasi Pemesan"
-            icon={
-              <svg
-                className="w-3.5 h-3.5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
-            }
-          >
-            <div className="flex items-center gap-3 mb-3">
-              {order.user.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={toStaticUrl(order.user.avatar_url)}
-                  alt={order.user.name}
-                  className="w-10 h-10 rounded-full object-cover border border-stone-200 shrink-0"
-                />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center shrink-0 border border-stone-200">
                   <svg
-                    className="w-5 h-5 text-stone-400"
+                    className="w-4 h-4 text-stone-500"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -1464,249 +1136,30 @@ export default function OrderDetailPage() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                     />
                   </svg>
-                </div>
-              )}
-              <div className="min-w-0">
-                <p className="font-barlow-bold text-sm font-bold text-stone-900 truncate">
-                  {order.user.name}
-                </p>
-                <p className="text-[11px] text-stone-400 truncate">
-                  {order.user.email}
-                </p>
-              </div>
-            </div>
-            {order.user.phone && (
-              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-stone-50 border border-stone-100">
-                <svg
-                  className="w-3.5 h-3.5 text-stone-400 shrink-0"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                  />
-                </svg>
-                <span className="text-[12px] text-stone-600">
-                  {order.user.phone}
-                </span>
+                </button>
               </div>
             )}
-          </Section>
-        )}
-
-        {/* ── Timestamps ── */}
-        <Section
-          title="Waktu"
-          icon={
-            <svg
-              className="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            {previewOpen && (
+              <FilePreviewModal
+                url={fileUrl}
+                fileType={ft}
+                onClose={() => setPreviewOpen(false)}
               />
-            </svg>
-          }
-        >
-          <div className="space-y-2">
-            <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-stone-50 border border-stone-100">
-              <span className="text-[11px] text-stone-400">Dibuat</span>
-              <span className="text-[12px] font-semibold text-stone-800">
-                {formatDate(order.created_at)}
-              </span>
-            </div>
-          </div>
-        </Section>
-
-        {/* ── CTA Buttons ── */}
-        {isCreated && (
-          <>
-            {/* Delete confirm modal */}
-            {showDeleteConfirm && (
-              <div
-                className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm"
-                onClick={() => !deleting && setShowDeleteConfirm(false)}
-              >
-                <div
-                  className="w-full max-w-[430px] bg-white rounded-t-[28px] overflow-hidden"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="flex justify-center pt-3 pb-1">
-                    <div className="w-9 h-1 rounded-full bg-stone-200" />
-                  </div>
-                  <div className="px-5 pt-4 pb-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-2xl bg-red-100 flex items-center justify-center shrink-0">
-                        <svg
-                          className="w-5 h-5 text-red-500"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={1.5}
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="font-barlow-bold text-[15px] font-bold text-stone-900">
-                          Batalkan Order
-                        </p>
-                        <p className="text-[11px] text-stone-400 mt-0.5">
-                          Tindakan ini tidak dapat dibatalkan
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="rounded-2xl bg-red-50 border border-red-100 px-4 py-3 mb-5">
-                      <p className="text-[13px] text-red-700 font-semibold">
-                        Yakin ingin menghapus order ini?
-                      </p>
-                      <p className="text-[11px] text-red-500 mt-1">
-                        Order{" "}
-                        <span className="font-mono font-bold">
-                          {order?.order_code?.code}
-                        </span>{" "}
-                        akan dihapus permanen.
-                      </p>
-                    </div>
-
-                    {deleteError && (
-                      <div className="flex items-center gap-2 rounded-xl bg-red-50 border border-red-100 px-3 py-2.5 mb-3">
-                        <svg
-                          className="w-3.5 h-3.5 text-red-400 shrink-0"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                        <p className="text-[11px] text-red-600">
-                          {deleteError}
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowDeleteConfirm(false);
-                          setDeleteError(null);
-                        }}
-                        disabled={deleting}
-                        className="flex-1 h-[48px] rounded-2xl border border-stone-200 bg-white text-[13px] font-bold text-stone-700 active:scale-[0.98] transition disabled:opacity-50"
-                      >
-                        Batal
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleDeleteOrder}
-                        disabled={deleting}
-                        className="flex-1 h-[48px] rounded-2xl bg-red-500 text-[13px] font-bold text-white active:scale-[0.98] transition disabled:opacity-60 flex items-center justify-center gap-2"
-                      >
-                        {deleting && (
-                          <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                        )}
-                        {deleting ? "Menghapus..." : "Ya, Hapus"}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
             )}
-
-            {/* Bottom CTA bar */}
-            <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] px-4 pb-6 pt-3 bg-gradient-to-t from-stone-50 via-stone-50/95 to-transparent pointer-events-none z-40">
-              <div className="flex gap-2">
-                {/* Tombol batalkan — hanya muncul kalau belum ada file */}
-                {!fileUrl && (
-                  <button
-                    type="button"
-                    onClick={() => setShowDeleteConfirm(true)}
-                    className="pointer-events-auto w-[56px] h-[56px] rounded-2xl bg-red-50 border border-red-200 flex items-center justify-center shrink-0 active:scale-[0.97] transition"
-                  >
-                    <svg
-                      className="w-5 h-5 text-red-500"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
-                )}
-
-                {/* Tombol selesaikan order */}
-                <Link
-                  href={`/my-order/${order.service_name_snapshot}/${order.order_code?.code}`}
-                  className="pointer-events-auto flex-1 h-[56px] rounded-2xl bg-stone-900 hover:bg-stone-800 text-white flex items-center justify-between px-5 active:scale-[0.98] transition-all shadow-xl shadow-stone-900/25"
-                >
-                  <div className="flex items-center gap-3">
-                    <svg
-                      className="w-5 h-5 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 8m12-8l2 8M9 21h6"
-                      />
-                    </svg>
-                    <span className="font-barlow-bold text-[14px] font-bold">
-                      Selesaikan Order
-                    </span>
-                  </div>
-                  <svg
-                    className="w-4 h-4 text-white/70"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </Link>
-              </div>
-            </div>
-          </>
+          </Section>
         )}
 
-        {isWaitingPayment && !paymentLoading && (
+        {/* Bukti Pembayaran */}
+        {showPaymentProof && payment && (
+          <PaymentProofSection paymentID={payment.id} />
+        )}
+
+        {/* CTA: Waiting Payment */}
+        {isWaitingPayment && payment?.payment_codes?.[0] && (
           <>
-            {/* Cancel payment confirm modal */}
             {showCancelPaymentConfirm && (
               <div
                 className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm"
@@ -1740,48 +1193,20 @@ export default function OrderDetailPage() {
                       </div>
                       <div>
                         <p className="font-barlow-bold text-[15px] font-bold text-stone-900">
-                          Batalkan Pembayaran
+                          Batalkan Pembayaran?
                         </p>
                         <p className="text-[11px] text-stone-400 mt-0.5">
                           Tindakan ini tidak dapat dibatalkan
                         </p>
                       </div>
                     </div>
-
-                    <div className="rounded-2xl bg-red-50 border border-red-100 px-4 py-3 mb-5">
-                      <p className="text-[13px] text-red-700 font-semibold">
-                        Yakin ingin membatalkan pembayaran ini?
-                      </p>
-                      <p className="text-[11px] text-red-500 mt-1">
-                        Pembayaran{" "}
-                        <span className="font-mono font-bold">
-                          {payment?.payment_codes?.[0]?.code ?? "-"}
-                        </span>{" "}
-                        akan dibatalkan permanen.
-                      </p>
-                    </div>
-
                     {cancelPaymentError && (
                       <div className="flex items-center gap-2 rounded-xl bg-red-50 border border-red-100 px-3 py-2.5 mb-3">
-                        <svg
-                          className="w-3.5 h-3.5 text-red-400 shrink-0"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
                         <p className="text-[11px] text-red-600">
                           {cancelPaymentError}
                         </p>
                       </div>
                     )}
-
                     <div className="flex gap-2">
                       <button
                         type="button"
@@ -1792,7 +1217,7 @@ export default function OrderDetailPage() {
                         disabled={cancellingPayment}
                         className="flex-1 h-[48px] rounded-2xl border border-stone-200 bg-white text-[13px] font-bold text-stone-700 active:scale-[0.98] transition disabled:opacity-50"
                       >
-                        Batal
+                        Tidak
                       </button>
                       <button
                         type="button"
@@ -1803,46 +1228,25 @@ export default function OrderDetailPage() {
                         {cancellingPayment && (
                           <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
                         )}
-                        {cancellingPayment ? "Membatalkan..." : "Ya, Batalkan"}
+                        {cancellingPayment ? "Memproses..." : "Ya, Batalkan"}
                       </button>
                     </div>
                   </div>
                 </div>
               </div>
             )}
-
-            {/* Bottom CTA bar */}
             <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] px-4 pb-6 pt-3 bg-gradient-to-t from-stone-50 via-stone-50/95 to-transparent pointer-events-none z-40">
-              <div className="flex gap-2">
-                {/* Tombol batalkan pembayaran */}
+              <div className="flex gap-2 pointer-events-auto">
                 <button
                   type="button"
                   onClick={() => setShowCancelPaymentConfirm(true)}
-                  className="pointer-events-auto w-[56px] h-[56px] rounded-2xl bg-red-50 border border-red-200 flex items-center justify-center shrink-0 active:scale-[0.97] transition"
+                  className="h-[56px] px-5 rounded-2xl border border-stone-200 bg-white text-stone-700 text-[13px] font-bold active:scale-[0.98] transition shadow-sm"
                 >
-                  <svg
-                    className="w-5 h-5 text-red-500"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={1.5}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                  Batal
                 </button>
-
-                {/* Tombol selesaikan pembayaran */}
                 <Link
-                  href={
-                    payment?.payment_codes?.[0]?.code
-                      ? `/payment/${payment.payment_codes[0].code}`
-                      : `/payment`
-                  }
-                  className="pointer-events-auto flex-1 h-[56px] rounded-2xl bg-amber-500 hover:bg-amber-400 text-white flex items-center justify-between px-5 active:scale-[0.98] transition-all shadow-xl shadow-amber-500/25"
+                  href={`/payment/${payment.payment_codes[0].code}`}
+                  className="flex-1 h-[56px] rounded-2xl bg-amber-500 hover:bg-amber-400 text-white flex items-center justify-between px-5 active:scale-[0.98] transition-all shadow-xl shadow-amber-500/25"
                 >
                   <div className="flex items-center gap-3">
                     <svg
@@ -1880,6 +1284,8 @@ export default function OrderDetailPage() {
             </div>
           </>
         )}
+
+        {/* CTA: Finished */}
         {isFinished && (
           <>
             {showCompletedConfirm && (
@@ -1920,7 +1326,6 @@ export default function OrderDetailPage() {
                         </p>
                       </div>
                     </div>
-
                     <div className="rounded-2xl bg-emerald-50 border border-emerald-100 px-4 py-3 mb-5">
                       <p className="text-[13px] text-emerald-700 font-semibold">
                         Tandai pesanan sebagai selesai?
@@ -1933,7 +1338,6 @@ export default function OrderDetailPage() {
                         akan ditandai completed dan tidak bisa diubah.
                       </p>
                     </div>
-
                     {completeError && (
                       <div className="flex items-center gap-2 rounded-xl bg-red-50 border border-red-100 px-3 py-2.5 mb-3">
                         <svg
@@ -1954,7 +1358,6 @@ export default function OrderDetailPage() {
                         </p>
                       </div>
                     )}
-
                     <div className="flex gap-2">
                       <button
                         type="button"
@@ -1983,7 +1386,6 @@ export default function OrderDetailPage() {
                 </div>
               </div>
             )}
-
             <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] px-4 pb-6 pt-3 bg-gradient-to-t from-stone-50 via-stone-50/95 to-transparent pointer-events-none z-40">
               <button
                 type="button"
@@ -2027,57 +1429,5 @@ export default function OrderDetailPage() {
         )}
       </div>
     </main>
-  );
-}
-
-// ─── Reusable CTA button ──────────────────────────────────────────────────────
-
-function ButtonAction({
-  label,
-  href,
-  icon,
-  variant = "dark",
-}: {
-  label: string;
-  href: string;
-  icon: React.ReactNode;
-  variant?: "dark" | "amber";
-}) {
-  const bgClass =
-    variant === "amber"
-      ? "bg-amber-500 hover:bg-amber-400 shadow-amber-500/25"
-      : "bg-stone-900 hover:bg-stone-800 shadow-stone-900/25";
-
-  return (
-    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] px-4 pb-6 pt-3 bg-gradient-to-t from-stone-50 via-stone-50/95 to-transparent pointer-events-none z-40">
-      <Link
-        href={href}
-        className={`pointer-events-auto w-full h-[56px] rounded-2xl text-white flex items-center justify-between px-5 active:scale-[0.98] transition-all shadow-xl ${bgClass}`}
-      >
-        <div className="flex items-center gap-3">
-          <svg
-            className="w-5 h-5 text-white"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            viewBox="0 0 24 24"
-          >
-            {icon}
-          </svg>
-          <span className="font-barlow-bold text-[14px] font-bold">
-            {label}
-          </span>
-        </div>
-        <svg
-          className="w-4 h-4 text-white/70"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-        </svg>
-      </Link>
-    </div>
   );
 }

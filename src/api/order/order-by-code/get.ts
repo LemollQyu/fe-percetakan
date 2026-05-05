@@ -46,6 +46,7 @@ export type OrderByCode = {
   user_note: string;
   status: string;
   quantity: number;
+  estimated_duration: number;
   user: OrderUser;
   duration: number;
   order_code: OrderCode;
