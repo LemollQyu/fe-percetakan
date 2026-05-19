@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -31,7 +31,7 @@ export function HomeCtaSection() {
           Pilih kategori layanan untuk memulai pesanan.
         </p>
         <Link
-          href="/layanan"
+          href="/landing-page"
           className="font-barlow-bold w-full min-h-[48px] flex items-center justify-center rounded-2xl bg-stone-900 text-white font-semibold text-[15px] shadow-lg shadow-stone-900/20 hover:bg-stone-800 active:scale-[0.99] transition-all"
         >
           Lihat layanan
@@ -59,4 +59,3 @@ export function HomeCtaSection() {
     </section>
   );
 }
-

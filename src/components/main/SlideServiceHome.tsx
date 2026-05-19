@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { getServicesList } from "@/api/jasa/services";
 import type { ServiceJasa } from "@/api/jasa/services/types";
+import { getCategoriesList } from "@/api/jasa/categories";
 
 function normalizeUrl(url: string): string {
   if (!url || typeof url !== "string") return url;
@@ -95,8 +96,20 @@ export function SlideServiceHome() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    getServicesList({ page: 1, limit: 20 })
-      .then((res) => setServices(shuffle(res.data ?? [])))
+    Promise.all([getServicesList({ page: 1, limit: 20 }), getCategoriesList()])
+      .then(([servicesRes, categoriesRes]) => {
+        const activeCategories = new Set(
+          (categoriesRes.data ?? [])
+            .filter((c) => c.is_active)
+            .map((c) => c.id),
+        );
+
+        const aktif = (servicesRes.data ?? []).filter(
+          (s) => s.is_active && activeCategories.has(s.category_id),
+        );
+
+        setServices(shuffle(aktif));
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
@@ -138,7 +151,7 @@ export function SlideServiceHome() {
           Produk Pilihan
         </h2>
         <Link
-          href="/services"
+          href="/landing-page"
           className="font-barlow-bold text-sm font-bold   flex items-center gap-1"
         >
           Lihat Semua

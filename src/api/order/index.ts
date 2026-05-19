@@ -9,6 +9,12 @@ export { finishOrder } from "./admin/post-finish-order";
 export { completedOrder } from "./orders/post-completed-order";
 export { getReport } from "./admin/get-report";
 export { getEstimasi } from "./estimasi/get-estimasi";
+export { patchEstimasi } from "./estimasi/patch-estimasi";
+
+export type {
+  PatchEstimasiResponse,
+  PatchEstimasiParams,
+} from "./estimasi/patch-estimasi";
 
 export type {
   TimerStateResponse,

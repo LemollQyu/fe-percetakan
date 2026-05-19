@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getServicesList } from "@/api/jasa/services";
 import type { ServiceJasa } from "@/api/jasa/services/types";
+import { getCategoriesList } from "@/api/jasa/categories";
+import type { CategoryJasaDetail } from "@/api/jasa/categories/types";
 
 function normalizeMediaUrl(url: string): string {
   if (!url || typeof url !== "string") return url;
@@ -28,7 +30,7 @@ function ServiceCard({ service }: { service: ServiceJasa }) {
     mediaList.find((m) => m.type === "gallery");
   const imageUrl = thumbnail?.url ? normalizeMediaUrl(thumbnail.url) : null;
 
-  const categorySlug = service.category?.slug ?? "layanan"; // ✅ tidak perlu as any
+  const categorySlug = service.category?.slug ?? "layanan";
 
   return (
     <Link
@@ -95,10 +97,19 @@ export async function ServicesSection() {
   let services: ServiceJasa[] = [];
 
   try {
-    const res = await getServicesList();
-    const active = (res.data ?? []).filter((s) => s.is_active);
+    const [servicesRes, categoriesRes] = await Promise.all([
+      getServicesList(),
+      getCategoriesList(),
+    ]);
 
-    // Shuffle acak (Fisher-Yates)
+    const activeCategories = new Set(
+      (categoriesRes.data ?? []).filter((c) => c.is_active).map((c) => c.id),
+    );
+
+    const active = (servicesRes.data ?? []).filter(
+      (s) => s.is_active && activeCategories.has(s.category_id),
+    );
+
     services = [...active].sort(() => Math.random() - 0.5);
   } catch {
     return (

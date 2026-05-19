@@ -94,6 +94,14 @@ const nextConfig = {
         source: "/static/refund/:path*",
         destination: `${paymentUrl}/static/refund/:path*`,
       },
+      {
+        source: "/static/icon-method/:path*",
+        destination: `${paymentUrl}/static/icon-method/:path*`,
+      },
+      {
+        source: "/static/code-qris/:path*",
+        destination: `${paymentUrl}/static/code-qris/:path*`,
+      },
 
       // Fallback static (kalau path tidak ada prefix service-nya)
       { source: "/static/:path*", destination: `${jasaUrl}/static/:path*` },

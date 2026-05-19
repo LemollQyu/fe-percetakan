@@ -1,6 +1,6 @@
 export { postCheckout } from "./checkout/post-checkout";
-export { getPaymentMethods } from "./method/get-method"; 
-export { getPaymentDetail } from "./payments/get-payment-code"; 
+export { getPaymentMethods } from "./method/get-method";
+export { getPaymentDetail } from "./payments/get-payment-code";
 export { getWaitingPayment } from "./payments/get-waiting-payment";
 export { uploadPaymentProof } from "./payments/post-proof";
 export { getPaymentByOrderId } from "./payments/get-payment-code-by-orderid";
@@ -19,6 +19,21 @@ export { sendRekening } from "./refund/post-send-rekening";
 export { getDetailRefunds } from "./refund/get-detail-refund";
 export { approveRefund } from "./refund/get-approve-refund";
 
+export { createMethodPayment } from "./method/post-method-payment";
+
+// export function
+export { deleteMethodPayment } from "./method/delete-method-payment";
+
+// export types
+export type {
+  DeleteMethodPaymentResponse,
+  DeleteMethodPaymentParams,
+} from "./method/delete-method-payment";
+
+export type {
+  CreateMethodPaymentResponse,
+  CreateMethodPaymentParams,
+} from "./method/post-method-payment";
 
 export type {
   CheckoutResponse,
@@ -29,8 +44,7 @@ export type {
 export type {
   PaymentMethod,
   PaymentMethodsResponse,
-} from "./method/get-method"; 
-
+} from "./method/get-method";
 
 export type {
   PaymentDetailResponse,
@@ -38,7 +52,7 @@ export type {
   PaymentInner,
   PaymentCode,
   GetPaymentDetailParams,
-} from "./payments/get-payment-code"; 
+} from "./payments/get-payment-code";
 
 export type {
   WaitingPaymentResponse,
@@ -46,20 +60,22 @@ export type {
   WaitingPaymentInner,
   WaitingPaymentCode,
   GetWaitingPaymentParams,
-} from "./payments/get-waiting-payment"; 
+} from "./payments/get-waiting-payment";
 
 export type {
   PaymentProofResponse,
   UploadPaymentProofParams,
 } from "./payments/post-proof";
 
-
 export type {
   GetPaymentByOrderIdResponse,
   GetPaymentByOrderIdParams,
 } from "./payments/get-payment-code-by-orderid";
 
-export type { CancelPaymentResponse, CancelPaymentParams } from "./payments/get-cancel-payment";
+export type {
+  CancelPaymentResponse,
+  CancelPaymentParams,
+} from "./payments/get-cancel-payment";
 
 export type {
   ApprovePaymentResponse,
@@ -71,8 +87,11 @@ export type {
   RejectedPaymentParams,
 } from "./admin/post-rejected-payment";
 
-
-export type { PaymentProof, GetPaymentProofResponse, GetPaymentProofParams } from "./payments/get-payment-proof";
+export type {
+  PaymentProof,
+  GetPaymentProofResponse,
+  GetPaymentProofParams,
+} from "./payments/get-payment-proof";
 
 export type {
   SubmitRefundResponse,
@@ -119,4 +138,3 @@ export type {
   AdminPaymentsMeta,
   GetAdminPaymentsParams,
 } from "./admin/get-all-payment";
-

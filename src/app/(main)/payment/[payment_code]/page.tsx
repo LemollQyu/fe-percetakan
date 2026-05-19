@@ -31,14 +31,26 @@ function formatDate(dateStr: string): string {
 }
 
 function normalizeUrl(url: string): string {
-  if (!url) return "";
-  try {
-    const parsed = new URL(url.startsWith("http") ? url : `http://${url}`);
-    return `/api/proxy/paymentmc${parsed.pathname}`;
-  } catch {
-    const path = url.startsWith("/") ? url : `/${url}`;
-    return `/api/proxy/paymentmc${path}`;
+  // if (!url) return "";
+  // try {
+  //   const parsed = new URL(url.startsWith("http") ? url : `http://${url}`);
+  //   return `/api/proxy/paymentmc${parsed.pathname}`;
+  // } catch {
+  //   const path = url.startsWith("/") ? url : `/${url}`;
+  //   return `/api/proxy/paymentmc${path}`;
+  // }
+  if (!url || typeof url !== "string") return url;
+  const t = url.trim();
+  if (t.startsWith("http://") || t.startsWith("https://")) {
+    const idx = t.indexOf("/static/");
+    if (idx !== -1) return t.substring(idx);
+    return t;
   }
+  if (t.startsWith("/static/")) return t;
+  const idx = t.indexOf("/static/");
+  if (idx !== -1) return t.substring(idx);
+  if (t.startsWith("static/")) return `/${t}`;
+  return t.startsWith("/") ? t : `/${t}`;
 }
 
 // ─── Countdown Hook ───────────────────────────────────────────────────────────
@@ -607,24 +619,6 @@ export default function PaymentPage() {
                 alt="QR Code Pembayaran"
                 className="w-full max-w-[240px] rounded-xl object-contain"
               />
-            </div>
-            <div className="flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-100 px-3 py-2.5">
-              <svg
-                className="w-3.5 h-3.5 text-amber-500 shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <p className="text-[11px] text-amber-700">
-                QR code hanya berlaku sekali dan tidak dapat digunakan ulang.
-              </p>
             </div>
           </div>
         </div>

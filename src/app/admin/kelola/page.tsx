@@ -117,7 +117,7 @@ export default function AdminKelolaPage() {
           href="/admin/kelola/orders"
           className="group flex items-center gap-4 rounded-2xl bg-white border border-stone-100 shadow-lg shadow-stone-200/30 p-5 hover:border-stone-200 hover:shadow-stone-200/40 transition-all active:scale-[0.99]"
         >
-          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600 group-hover:bg-stone-200 transition-colors">
+          <div className="flex h-12 w-12 flex-shrink-0 justify-center items-center justify-content-center rounded-xl bg-stone-100 text-stone-600 group-hover:bg-stone-200 transition-colors">
             <svg
               className="h-6 w-6"
               fill="none"
@@ -128,7 +128,7 @@ export default function AdminKelolaPage() {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m-6 9 2 2 4-4"
               />
             </svg>
           </div>
@@ -183,6 +183,56 @@ export default function AdminKelolaPage() {
           </div>
           <svg
             className="ml-auto h-5 w-5 flex-shrink-0 text-stone-600 group-hover:text-stone-600 transition-colors"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </Link>
+        <Link
+          href="/admin/kelola/payments"
+          className="group flex items-center gap-4 rounded-2xl bg-white border border-stone-100 shadow-lg shadow-stone-200/30 p-5 hover:border-stone-200 hover:shadow-stone-200/40 transition-all active:scale-[0.99]"
+        >
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600 group-hover:bg-stone-200 transition-colors">
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
+              <rect
+                x="2"
+                y="6"
+                width="20"
+                height="13"
+                rx="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M2 10h20M6 14h4m-4 3h2"
+              />
+            </svg>
+          </div>
+          <div className="min-w-0">
+            <h2 className="font-barlow-bold text-stone-900 font-semibold">
+              Metode Pembayaran
+            </h2>
+            <p className="font-monterat-tipis text-sm text-stone-700 mt-0.5">
+              Kelola metode pembayaran pelanggan
+            </p>
+          </div>
+          <svg
+            className="ml-auto h-5 w-5 flex-shrink-0 text-stone-600 transition-colors"
             fill="none"
             stroke="currentColor"
             strokeWidth={2}

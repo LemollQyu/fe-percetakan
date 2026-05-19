@@ -13,6 +13,7 @@ import { getPaymentProof } from "@/api/payment";
 import type { PaymentProof } from "@/api/payment";
 import { toStaticUrl } from "@/app/helper/normalizeUrl";
 import { finishOrder } from "@/api/order";
+import { formatDuration } from "@/app/helper/formatDuration";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1337,7 +1338,7 @@ export default function AdminOrderDetailPage() {
                 {formatRupiah(order.total_price_snapshot)}
               </span>
             </div>
-            {order.user_note && (
+            {typeof order.user_note === "string" && order.user_note.trim() && (
               <div className="mt-3 flex items-start gap-2 bg-stone-50 rounded-xl px-3 py-2.5 border border-stone-100">
                 <svg
                   className="w-3.5 h-3.5 text-stone-400 mt-0.5 shrink-0"
@@ -1355,6 +1356,26 @@ export default function AdminOrderDetailPage() {
                 <p className="text-[11px] text-stone-600 italic leading-relaxed">
                   {order.user_note}
                 </p>
+              </div>
+            )}
+            {order.status === "On_progress" && order.estimated_duration > 0 && (
+              <div className="mt-3 flex items-center gap-2 bg-stone-50 rounded-xl px-3 py-2.5 border border-stone-100">
+                <svg
+                  className="w-3.5 h-3.5 text-stone-400 shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span className="text-[11px] text-amber-700 font-medium">
+                  Estimasi : {formatDuration(order.estimated_duration)}
+                </span>
               </div>
             )}
             {order.order_code?.expired_at &&

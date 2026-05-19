@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, useCallback, Suspense } from "react";
 import { getServicesList } from "@/api/jasa/services";
+import { getCategoriesList } from "@/api/jasa/categories";
 import type { ServiceJasa } from "@/api/jasa/services/types";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
@@ -266,8 +267,22 @@ function SearchInner() {
     async function fetchAll() {
       setFetchLoading(true);
       try {
-        const res = await getServicesList({ limit: 999 });
-        setAllServices(res.data ?? []);
+        const [servicesRes, categoriesRes] = await Promise.all([
+          getServicesList({ limit: 200 }),
+          getCategoriesList(),
+        ]);
+
+        const activeCategories = new Set(
+          (categoriesRes.data ?? [])
+            .filter((c) => c.is_active)
+            .map((c) => c.id),
+        );
+
+        const filtered = (servicesRes.data ?? []).filter(
+          (s) => s.is_active && activeCategories.has(s.category_id),
+        );
+
+        setAllServices(filtered);
       } catch {
         setAllServices([]);
       } finally {

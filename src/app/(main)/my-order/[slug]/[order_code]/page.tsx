@@ -21,6 +21,21 @@ function formatRupiah(amount: number): string {
   }).format(amount);
 }
 
+function normalizeMediaUrl(url: string): string {
+  if (!url || typeof url !== "string") return url;
+  const t = url.trim();
+  if (t.startsWith("http://") || t.startsWith("https://")) {
+    const idx = t.indexOf("/static/");
+    if (idx !== -1) return t.substring(idx);
+    return t;
+  }
+  if (t.startsWith("/static/")) return t;
+  const idx = t.indexOf("/static/");
+  if (idx !== -1) return t.substring(idx);
+  if (t.startsWith("static/")) return `/${t}`;
+  return t.startsWith("/") ? t : `/${t}`;
+}
+
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleString("id-ID", {
     day: "numeric",
@@ -1251,18 +1266,19 @@ export default function OrderDetailPage() {
                           <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center shrink-0 overflow-hidden">
                             {method.url_icon ? (
                               <img
-                                src={(() => {
-                                  try {
-                                    const parsed = new URL(
-                                      method.url_icon.startsWith("http")
-                                        ? method.url_icon
-                                        : `http://${method.url_icon}`,
-                                    );
-                                    return `/api/proxy/paymentmc${parsed.pathname}`;
-                                  } catch {
-                                    return `/api/proxy/paymentmc/${method.url_icon}`;
-                                  }
-                                })()}
+                                // src={(() => {
+                                //   try {
+                                //     const parsed = new URL(
+                                //       method.url_icon.startsWith("http")
+                                //         ? method.url_icon
+                                //         : `http://${method.url_icon}`,
+                                //     );
+                                //     return `/api/proxy/paymentmc${parsed.pathname}`;
+                                //   } catch {
+                                //     return `/api/proxy/paymentmc/${method.url_icon}`;
+                                //   }
+                                // })()}
+                                src={normalizeMediaUrl(method.url_icon)}
                                 alt={method.payment_method}
                                 className="w-6 h-6 object-contain"
                               />

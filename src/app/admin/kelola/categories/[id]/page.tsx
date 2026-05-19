@@ -115,9 +115,9 @@ export default function AdminCategoryEditPage() {
   const handleIconChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!token || !file || !Number.isFinite(id)) return;
-    const allowed = ["image/png", "image/svg+xml"];
+    const allowed = ["image/png", "image/svg+xml", "image/webp"];
     if (!allowed.includes(file.type)) {
-      alert("Icon hanya PNG atau SVG.");
+      alert("Icon hanya PNG atau SVG atau WEBB");
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
@@ -204,7 +204,7 @@ export default function AdminCategoryEditPage() {
                   <label className="font-monterat-tipis mt-2 cursor-pointer inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-stone-800 bg-stone-100 hover:bg-stone-200 transition-colors">
                     <input
                       type="file"
-                      accept=".png,.svg,image/png,image/svg+xml"
+                      accept=".png,.svg, .webp,image/png,image/svg+xml"
                       className="sr-only"
                       disabled={iconUploading}
                       onChange={handleIconChange}

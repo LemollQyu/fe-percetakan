@@ -137,7 +137,7 @@ async function CategoryDetail({ slug }: { slug: string }) {
     );
   }
 
-  const services = category.service ?? [];
+  const services = (category.service ?? []).filter((s) => s.is_active === true);
 
   return (
     <div className="space-y-6">

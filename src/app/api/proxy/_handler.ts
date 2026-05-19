@@ -23,14 +23,14 @@ type RouteContext = { params: Promise<{ path: string[] }> };
 async function proxyHandler(
   req: NextRequest,
   ctx: RouteContext,
-  service: string
+  service: string,
 ): Promise<NextResponse> {
   const target = TARGETS[service];
 
   if (!target) {
     return NextResponse.json(
       { error: `Unknown service: ${service}` },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
@@ -56,12 +56,12 @@ async function proxyHandler(
   // ─────────────────────────────────────────────
   // Forward body (🔥 FIX UTAMA DI SINI)
   // ─────────────────────────────────────────────
-let body: BodyInit | undefined;
-const method = req.method;
+  let body: BodyInit | undefined;
+  const method = req.method;
 
-if (method !== "GET" && method !== "DELETE") {
-  body = req.body ?? undefined; // ✅ fix TS + aman runtime
-}
+  if (method !== "GET" && method !== "DELETE") {
+    body = req.body ?? undefined; // ✅ fix TS + aman runtime
+  }
 
   try {
     const svcRes = await fetch(targetUrl, {
@@ -105,7 +105,6 @@ if (method !== "GET" && method !== "DELETE") {
       status: svcRes.status,
       headers: resHeaders,
     });
-
   } catch (err) {
     console.error(`[proxy/${service}] Cannot reach ${targetUrl}:`, err);
 
@@ -115,7 +114,7 @@ if (method !== "GET" && method !== "DELETE") {
         detail: err instanceof Error ? err.message : String(err),
         url: targetUrl,
       },
-      { status: 502 }
+      { status: 502 },
     );
   }
 }

@@ -914,15 +914,71 @@ export default function OrderDetailPage() {
                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                {order.status === "On_progress" && (
-                  <span className="text-[11px] text-amber-700 font-medium">
-                    Estimasi : {formatDuration(order.estimated_duration)}
-                  </span>
-                )}
+
+                <span className="text-[11px] text-amber-700 font-medium">
+                  Estimasi : {formatDuration(order.estimated_duration)}
+                </span>
               </div>
             )}
           </div>
         </div>
+        {/* lihat struk */}
+        {(order.status === "On_progress" || order.status === "Finished") && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-stone-100 bg-white p-3 shadow-sm">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-100">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="17"
+                    height="17"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-stone-500"
+                  >
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-[13px] font-bold text-stone-800">
+                    Invoice
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() =>
+                  router.push(`/invoices/${order.order_code.code}`)
+                }
+                className="flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-stone-900 px-3.5 py-1.5 text-[12px] font-medium text-white"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                View
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Timeline Status */}
         {!isCancelledOrExpired && (
           <Section
@@ -1000,7 +1056,6 @@ export default function OrderDetailPage() {
             </div>
           </Section>
         )}
-
         {/* Spesifikasi */}
         {order.order_spesifications?.length > 0 && (
           <Section
@@ -1045,7 +1100,6 @@ export default function OrderDetailPage() {
             </div>
           </Section>
         )}
-
         {/* File Order */}
         {fileUrl && (
           <Section
@@ -1151,12 +1205,152 @@ export default function OrderDetailPage() {
             )}
           </Section>
         )}
-
         {/* Bukti Pembayaran */}
         {showPaymentProof && payment && (
           <PaymentProofSection paymentID={payment.id} />
         )}
-
+        {/* CTA: Created */}
+        {isCreated && (
+          <>
+            {showDeleteConfirm && (
+              <div
+                className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm"
+                onClick={() => !deleting && setShowDeleteConfirm(false)}
+              >
+                <div
+                  className="w-full max-w-[430px] bg-white rounded-t-[28px] overflow-hidden"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex justify-center pt-3 pb-1">
+                    <div className="w-9 h-1 rounded-full bg-stone-200" />
+                  </div>
+                  <div className="px-5 pt-4 pb-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-2xl bg-red-100 flex items-center justify-center shrink-0">
+                        <svg
+                          className="w-5 h-5 text-red-500"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="font-barlow-bold text-[15px] font-bold text-stone-900">
+                          Hapus Order?
+                        </p>
+                        <p className="text-[11px] text-stone-400 mt-0.5">
+                          Tindakan ini tidak dapat dibatalkan
+                        </p>
+                      </div>
+                    </div>
+                    <div className="rounded-2xl bg-red-50 border border-red-100 px-4 py-3 mb-5">
+                      <p className="text-[13px] text-red-700 font-semibold">
+                        Yakin ingin menghapus order ini?
+                      </p>
+                      <p className="text-[11px] text-red-600 mt-1">
+                        Order{" "}
+                        <span className="font-mono font-bold">
+                          {order?.order_code?.code}
+                        </span>{" "}
+                        akan dihapus permanen.
+                      </p>
+                    </div>
+                    {deleteError && (
+                      <div className="flex items-center gap-2 rounded-xl bg-red-50 border border-red-100 px-3 py-2.5 mb-3">
+                        <p className="text-[11px] text-red-600">
+                          {deleteError}
+                        </p>
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowDeleteConfirm(false);
+                          setDeleteError(null);
+                        }}
+                        disabled={deleting}
+                        className="flex-1 h-[48px] rounded-2xl border border-stone-200 bg-white text-[13px] font-bold text-stone-700 active:scale-[0.98] transition disabled:opacity-50"
+                      >
+                        Batal
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleDeleteOrder}
+                        disabled={deleting}
+                        className="flex-1 h-[48px] rounded-2xl bg-red-500 text-[13px] font-bold text-white active:scale-[0.98] transition disabled:opacity-60 flex items-center justify-center gap-2"
+                      >
+                        {deleting && (
+                          <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                        )}
+                        {deleting ? "Menghapus..." : "Ya, Hapus"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] px-4 pb-6 pt-3 bg-gradient-to-t from-stone-50 via-stone-50/95 to-transparent pointer-events-none z-40">
+              <div className="flex gap-2 pointer-events-auto">
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="h-[56px] px-5 rounded-2xl border border-red-300 bg-white text-red-500 text-[12px] font-bold active:scale-[0.98] transition shadow-sm flex items-center gap-2"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                  Hapus
+                </button>
+                <button
+                  type="button"
+                  className="flex-1 h-[56px] rounded-2xl bg-amber-500 hover:bg-amber-400 text-white flex items-center justify-between px-5 active:scale-[0.98] transition-all shadow-xl shadow-amber-500/25"
+                  onClick={() =>
+                    router.push(
+                      `/my-order/${order?.service_name_snapshot}/${order?.order_code?.code}`,
+                    )
+                  }
+                >
+                  <div className="flex items-center gap-3">
+                    <svg
+                      className="w-5 h-5 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                      />
+                    </svg>
+                    <span className="font-barlow-bold text-[13px] font-bold">
+                      Selesaikan Pembayaran
+                    </span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </>
+        )}
         {/* CTA: Waiting Payment */}
         {isWaitingPayment && payment?.payment_codes?.[0] && (
           <>
@@ -1284,7 +1478,6 @@ export default function OrderDetailPage() {
             </div>
           </>
         )}
-
         {/* CTA: Finished */}
         {isFinished && (
           <>

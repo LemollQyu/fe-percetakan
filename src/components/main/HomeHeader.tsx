@@ -19,7 +19,7 @@ import { getMyOrders, MyOrder } from "@/api/order";
 
 const BellIcon = () => (
   <svg
-    className="w-5 h-5 text-stone-500"
+    className="w-5 h-5 text-stone-400"
     fill="none"
     stroke="currentColor"
     strokeWidth={2}
@@ -35,7 +35,7 @@ const BellIcon = () => (
 
 const DefaultAvatarIcon = () => (
   <svg
-    className="w-6 h-6 text-stone-500"
+    className="w-6 h-6 text-stone-400"
     fill="none"
     stroke="currentColor"
     strokeWidth={2}
@@ -311,20 +311,122 @@ export function HomeHeader() {
 
   if (!mounted) {
     return (
-      <header className="sticky top-0 z-10 flex items-center justify-between h-14 px-4 max-w-[430px] w-full mx-auto border-b border-stone-200/60 bg-[#f5f0eb]/90 backdrop-blur-sm">
-        <span className="font-barlow-bold text-lg font-semibold text-stone-800">
+      <header className="sticky top-0 z-10 flex items-center justify-between h-14 px-4 max-w-[430px] w-full mx-auto border-b border-stone-700/60 bg-stone-900 backdrop-blur-sm">
+        <span className="font-barlow-bold text-lg font-semibold text-stone-100">
           Nabila Fotocopy
         </span>
-        <div className="w-24 h-10 rounded-xl bg-stone-200/50 animate-pulse" />
+        <div className="w-24 h-10 rounded-xl bg-stone-800/70 animate-pulse" />
       </header>
     );
   }
 
   return (
-    <header className="sticky top-0 z-10 flex items-center justify-between h-14 px-4 max-w-[430px] w-full mx-auto border-b border-stone-200/60 bg-[#f5f0eb]/90 backdrop-blur-sm">
-      <span className="font-barlow-bold text-lg font-semibold text-stone-800">
-        Nabila Fotocopy
-      </span>
+    <header className="sticky top-0 z-10 flex items-center justify-between h-14 px-4 max-w-[430px] w-full mx-auto border-b border-stone-700/60 bg-stone-900 backdrop-blur-sm">
+      <div className="flex items-center gap-1">
+        <svg
+          width="28"
+          height="28"
+          viewBox="0 0 128 148"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            x="22"
+            y="12"
+            width="84"
+            height="34"
+            rx="7"
+            fill="#FFFFFF"
+            stroke="#6B3F1F"
+            strokeWidth="1.5"
+          />
+          <line
+            x1="34"
+            y1="24"
+            x2="94"
+            y2="24"
+            stroke="#6B3F1F"
+            strokeWidth="0.8"
+            opacity="0.35"
+          />
+          <line
+            x1="34"
+            y1="34"
+            x2="68"
+            y2="34"
+            stroke="#A0724A"
+            strokeWidth="0.8"
+            opacity="0.3"
+          />
+
+          <rect
+            x="6"
+            y="43"
+            width="116"
+            height="58"
+            rx="11"
+            fill="#3D1F0D"
+            stroke="#6B3F1F"
+            strokeWidth="1.5"
+          />
+          <line
+            x1="6"
+            y1="62"
+            x2="122"
+            y2="62"
+            stroke="#7A5030"
+            strokeWidth="0.8"
+            opacity="0.5"
+          />
+
+          <circle cx="28" cy="79" r="5.5" fill="#2C1208" />
+          <circle cx="28" cy="79" r="3.5" fill="#C4956A" />
+          <circle cx="46" cy="79" r="5.5" fill="#2C1208" />
+          <circle cx="46" cy="79" r="3.5" fill="#C4956A" opacity="0.55" />
+          <circle cx="64" cy="79" r="5.5" fill="#2C1208" />
+          <circle cx="64" cy="79" r="3.5" fill="#C4956A" opacity="0.2" />
+
+          <circle cx="96" cy="79" r="5" fill="#FAF6F1" />
+          <circle cx="96" cy="79" r="2.5" fill="#8B5E3C" />
+          <circle cx="112" cy="79" r="5" fill="#FFFFFF" opacity="0.1" />
+          <circle cx="112" cy="79" r="2.5" fill="#6B3F1F" opacity="0.4" />
+
+          <rect
+            x="22"
+            y="98"
+            width="84"
+            height="40"
+            rx="8"
+            fill="#FFFFFF"
+            stroke="#6B3F1F"
+            strokeWidth="1.5"
+          />
+          <line
+            x1="34"
+            y1="113"
+            x2="88"
+            y2="113"
+            stroke="#3D1F0D"
+            strokeWidth="1.3"
+            strokeLinecap="round"
+            opacity="0.75"
+          />
+          <line
+            x1="34"
+            y1="126"
+            x2="58"
+            y2="126"
+            stroke="#6B3F1F"
+            strokeWidth="1.3"
+            strokeLinecap="round"
+            opacity="0.4"
+          />
+        </svg>
+
+        <span className="font-barlow-bold text-lg font-semibold text-stone-100">
+          Nabila Fotocopy
+        </span>
+      </div>
 
       <div className="flex items-center gap-2 relative">
         {loggedIn ? (
@@ -336,11 +438,11 @@ export function HomeHeader() {
                 setNotifOpen((v) => !v);
                 setProfileOpen(false);
               }}
-              className="relative flex items-center justify-center w-11 h-11 rounded-full text-white hover:bg-white/10 active:scale-95 transition-all"
+              className="relative flex items-center justify-center w-11 h-11 rounded-full hover:bg-stone-800/70 active:scale-95 transition-all"
             >
               <BellIcon />
               {totalUnread > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-semibold px-1 shadow border border-[#f5f0eb]">
+                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-semibold px-1 shadow border border-black">
                   {totalUnread}
                 </span>
               )}
@@ -351,7 +453,7 @@ export function HomeHeader() {
               ref={triggerRef}
               type="button"
               onClick={() => setProfileOpen((v) => !v)}
-              className="flex items-center justify-center w-10 h-10 rounded-full overflow-hidden bg-stone-200 border-2 border-stone-200 hover:border-stone-300 active:scale-95 transition-all shrink-0"
+              className="flex items-center justify-center w-10 h-10 rounded-full overflow-hidden bg-stone-800 border-2 border-stone-700 hover:border-stone-600 active:scale-95 transition-all shrink-0"
               aria-label="Profil"
               aria-expanded={profileOpen}
             >
@@ -362,7 +464,7 @@ export function HomeHeader() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <span className="flex w-full h-full items-center justify-center bg-stone-100">
+                <span className="flex w-full h-full items-center justify-center bg-stone-800">
                   <DefaultAvatarIcon />
                 </span>
               )}
@@ -372,11 +474,11 @@ export function HomeHeader() {
             {profileOpen && (
               <div
                 ref={cardRef}
-                className="absolute top-full right-0 mt-2 w-80 rounded-[20px] bg-white border border-stone-100 shadow-2xl shadow-stone-300/40 ring-1 ring-stone-100/80 overflow-hidden z-30"
+                className="absolute top-full right-0 mt-2 w-80 rounded-[20px] bg-stone-800 border border-stone-700 shadow-2xl shadow-black/60 ring-1 ring-stone-700/80 overflow-hidden z-30"
               >
-                <div className="pt-5 pb-4 px-5 bg-gradient-to-b from-stone-50 to-white">
+                <div className="pt-5 pb-4 px-5 bg-gradient-to-b from-stone-800 to-stone-800/90">
                   <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0 w-12 h-12 rounded-full overflow-hidden bg-stone-200 ring-2 ring-white shadow-md">
+                    <div className="flex-shrink-0 w-12 h-12 rounded-full overflow-hidden bg-stone-800 ring-2 ring-stone-600 shadow-md">
                       {avatarUrl ? (
                         <img
                           src={avatarUrl}
@@ -384,28 +486,28 @@ export function HomeHeader() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <span className="flex w-full h-full items-center justify-center bg-stone-100">
+                        <span className="flex w-full h-full items-center justify-center bg-stone-800">
                           <DefaultAvatarIcon />
                         </span>
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-monterat-tipis text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
+                      <p className="font-monterat-tipis text-[11px] font-semibold text-stone-400 uppercase tracking-wider">
                         Username
                       </p>
-                      <p className="font-barlow-bold text-stone-900 font-semibold truncate text-[15px] mt-0.5">
+                      <p className="font-barlow-bold text-stone-100 font-semibold truncate text-[15px] mt-0.5">
                         {profile.username || profile.email || "–"}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="px-5 py-3 space-y-2.5 border-t border-stone-100">
+                <div className="px-5 py-3 space-y-2.5 border-t border-stone-700">
                   {/* Nama */}
-                  <div className="flex items-center gap-3 py-2 px-3 rounded-xl bg-stone-50/80">
-                    <span className="flex-shrink-0 w-8 h-8 rounded-lg bg-stone-200/80 flex items-center justify-center">
+                  <div className="flex items-center gap-3 py-2 px-3 rounded-xl bg-stone-800/70">
+                    <span className="flex-shrink-0 w-8 h-8 rounded-lg bg-stone-700/80 flex items-center justify-center">
                       <svg
-                        className="w-4 h-4 text-stone-600"
+                        className="w-4 h-4 text-stone-300"
                         fill="none"
                         stroke="currentColor"
                         strokeWidth={2}
@@ -419,19 +521,19 @@ export function HomeHeader() {
                       </svg>
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="font-monterat-tipis text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
+                      <p className="font-monterat-tipis text-[11px] font-semibold text-stone-400 uppercase tracking-wider">
                         Nama
                       </p>
-                      <p className="font-monterat-tipis text-stone-800 text-sm truncate">
+                      <p className="font-monterat-tipis text-stone-200 text-sm truncate">
                         {profile.name || "–"}
                       </p>
                     </div>
                   </div>
                   {/* Email */}
-                  <div className="flex items-center gap-3 py-2 px-3 rounded-xl bg-stone-50/80">
-                    <span className="flex-shrink-0 w-8 h-8 rounded-lg bg-stone-200/80 flex items-center justify-center">
+                  <div className="flex items-center gap-3 py-2 px-3 rounded-xl bg-stone-800/70">
+                    <span className="flex-shrink-0 w-8 h-8 rounded-lg bg-stone-700/80 flex items-center justify-center">
                       <svg
-                        className="w-4 h-4 text-stone-600"
+                        className="w-4 h-4 text-stone-300"
                         fill="none"
                         stroke="currentColor"
                         strokeWidth={2}
@@ -445,19 +547,19 @@ export function HomeHeader() {
                       </svg>
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="font-monterat-tipis text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
+                      <p className="font-monterat-tipis text-[11px] font-semibold text-stone-400 uppercase tracking-wider">
                         Email
                       </p>
-                      <p className="font-monterat-tipis text-stone-800 text-sm truncate">
+                      <p className="font-monterat-tipis text-stone-200 text-sm truncate">
                         {profile.email || "–"}
                       </p>
                     </div>
                   </div>
                   {/* Phone */}
-                  <div className="flex items-center gap-3 py-2 px-3 rounded-xl bg-stone-50/80">
-                    <span className="flex-shrink-0 w-8 h-8 rounded-lg bg-stone-200/80 flex items-center justify-center">
+                  <div className="flex items-center gap-3 py-2 px-3 rounded-xl bg-stone-800/70">
+                    <span className="flex-shrink-0 w-8 h-8 rounded-lg bg-stone-700/80 flex items-center justify-center">
                       <svg
-                        className="w-4 h-4 text-stone-600"
+                        className="w-4 h-4 text-stone-300"
                         fill="none"
                         stroke="currentColor"
                         strokeWidth={2}
@@ -471,21 +573,21 @@ export function HomeHeader() {
                       </svg>
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="font-monterat-tipis text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
+                      <p className="font-monterat-tipis text-[11px] font-semibold text-stone-400 uppercase tracking-wider">
                         Phone
                       </p>
-                      <p className="font-monterat-tipis text-stone-800 text-sm truncate">
+                      <p className="font-monterat-tipis text-stone-200 text-sm truncate">
                         {profile.phone || "–"}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-4 pt-2 border-t border-stone-100 bg-stone-50/30">
+                <div className="p-4 pt-2 border-t border-stone-700 bg-stone-900/60">
                   <button
                     type="button"
                     onClick={handleSignOut}
-                    className="font-barlow-bold w-full min-h-[46px] flex items-center justify-center gap-2 rounded-xl bg-stone-900 text-white font-semibold text-[14px] shadow-lg shadow-stone-900/20 hover:bg-stone-800 active:scale-[0.99] transition-all"
+                    className="font-barlow-bold w-full min-h-[46px] flex items-center justify-center gap-2 rounded-xl bg-stone-100 text-stone-900 font-semibold text-[14px] shadow-lg shadow-black/30 hover:bg-white active:scale-[0.99] transition-all"
                   >
                     <svg
                       className="w-4 h-4"
@@ -510,12 +612,12 @@ export function HomeHeader() {
             {notifOpen && (
               <div
                 ref={notifRef}
-                className="absolute top-full right-0 mt-2 w-80 rounded-[20px] bg-white border border-stone-100 shadow-2xl shadow-stone-300/40 overflow-hidden z-30"
+                className="absolute top-full right-0 mt-2 w-80 rounded-[20px] bg-stone-800 border border-stone-700 shadow-2xl shadow-black/60 overflow-hidden z-30"
               >
                 {/* Header notif */}
-                <div className="px-4 py-3 border-b border-stone-100 bg-stone-50/60 flex items-center justify-between">
+                <div className="px-4 py-3 border-b border-stone-700 bg-stone-900/80 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <p className="font-semibold text-stone-800 text-sm">
+                    <p className="font-semibold text-stone-100 text-sm">
                       Notifikasi
                     </p>
                     {totalUnread > 0 && (
@@ -527,7 +629,7 @@ export function HomeHeader() {
                   {totalUnread > 0 && !notifLoading && (
                     <button
                       onClick={markAllUserNotifRead}
-                      className="text-[11px] text-stone-500 hover:text-stone-800 font-medium"
+                      className="text-[11px] text-stone-400 hover:text-stone-200 font-medium"
                     >
                       Tandai semua dibaca
                     </button>
@@ -540,11 +642,11 @@ export function HomeHeader() {
                     <div className="p-4 space-y-3">
                       {[1, 2, 3, 4].map((i) => (
                         <div key={i} className="animate-pulse flex gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-stone-100 shrink-0" />
+                          <div className="w-9 h-9 rounded-xl bg-stone-800 shrink-0" />
                           <div className="flex-1 space-y-2">
-                            <div className="h-2.5 bg-stone-100 rounded w-3/4" />
-                            <div className="h-2 bg-stone-100 rounded w-1/2" />
-                            <div className="h-2 bg-stone-100 rounded w-1/3" />
+                            <div className="h-2.5 bg-stone-800 rounded w-3/4" />
+                            <div className="h-2 bg-stone-800 rounded w-1/2" />
+                            <div className="h-2 bg-stone-800 rounded w-1/3" />
                           </div>
                         </div>
                       ))}
@@ -554,18 +656,18 @@ export function HomeHeader() {
                   {!notifLoading && (
                     <>
                       {/* ── Section: Menunggu Pembayaran ── */}
-                      <div className="px-4 py-2 flex items-center gap-2 border-b border-stone-100 bg-amber-50/40">
+                      <div className="px-4 py-2 flex items-center gap-2 border-b border-stone-700 bg-amber-900/20">
                         <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
-                        <p className="text-[10px] font-semibold text-amber-800 uppercase tracking-wider">
+                        <p className="text-[10px] font-semibold text-amber-400 uppercase tracking-wider">
                           Menunggu Pembayaran
                         </p>
-                        <span className="ml-auto text-[10px] font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                        <span className="ml-auto text-[10px] font-semibold text-amber-300 bg-amber-900/50 px-2 py-0.5 rounded-full">
                           {unreadOrders.length}
                         </span>
                       </div>
 
                       {orders.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-5 text-center text-stone-400">
+                        <div className="flex flex-col items-center justify-center py-5 text-center text-stone-500">
                           <BellIcon />
                           <p className="mt-1.5 text-xs italic">
                             Tidak ada pembayaran menunggu
@@ -582,15 +684,15 @@ export function HomeHeader() {
                             href={`/order/${o.order_code.code}`}
                             key={o.id}
                             onClick={() => handleCheckNotif(`order-${o.id}`)}
-                            className={`flex items-center gap-3 px-4 py-3 border-b border-stone-100 cursor-pointer transition-all ${
+                            className={`flex items-center gap-3 px-4 py-3 border-b border-stone-700 cursor-pointer transition-all ${
                               isRead
-                                ? "opacity-50 hover:opacity-80 hover:bg-stone-50"
-                                : "border-l-4 border-l-amber-400 hover:bg-amber-50/30"
+                                ? "opacity-40 hover:opacity-60 hover:bg-stone-800/40"
+                                : "border-l-4 border-l-amber-400 hover:bg-amber-900/20"
                             }`}
                           >
-                            <div className="w-9 h-9 flex items-center justify-center rounded-xl bg-amber-50 border border-amber-100 shrink-0">
+                            <div className="w-9 h-9 flex items-center justify-center rounded-xl bg-amber-900/40 border border-amber-800/50 shrink-0">
                               <svg
-                                className="w-4 h-4 text-amber-500"
+                                className="w-4 h-4 text-amber-400"
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth={1.8}
@@ -604,16 +706,16 @@ export function HomeHeader() {
                               </svg>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-semibold text-stone-800">
+                              <p className="text-xs font-semibold text-stone-100">
                                 Menunggu pembayaran
                               </p>
-                              <p className="text-[11px] text-stone-500 truncate">
+                              <p className="text-[11px] text-stone-400 truncate">
                                 Order {o.service_name_snapshot}
                               </p>
-                              <p className="text-[11px] text-stone-500 truncate">
+                              <p className="text-[11px] text-stone-400 truncate">
                                 Total {o.total_price_snapshot}
                               </p>
-                              <p className="text-[10px] text-stone-400 mt-0.5">
+                              <p className="text-[10px] text-stone-500 mt-0.5">
                                 {o.created_at
                                   ? new Date(o.created_at).toLocaleString(
                                       "id-ID",
@@ -629,18 +731,18 @@ export function HomeHeader() {
                       })}
 
                       {/* ── Section: Pengembalian Dana (status "") ── */}
-                      <div className="px-4 py-2 flex items-center gap-2 border-b border-stone-100 bg-red-50/40">
+                      <div className="px-4 py-2 flex items-center gap-2 border-b border-stone-700 bg-red-900/20">
                         <span className="w-2 h-2 rounded-full bg-red-400 shrink-0" />
-                        <p className="text-[10px] font-semibold text-red-800 uppercase tracking-wider">
+                        <p className="text-[10px] font-semibold text-red-400 uppercase tracking-wider">
                           Pengembalian Dana
                         </p>
-                        <span className="ml-auto text-[10px] font-semibold text-red-700 bg-red-100 px-2 py-0.5 rounded-full">
+                        <span className="ml-auto text-[10px] font-semibold text-red-300 bg-red-900/50 px-2 py-0.5 rounded-full">
                           {unreadRefunds.length}
                         </span>
                       </div>
 
                       {refunds.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-5 text-center text-stone-400">
+                        <div className="flex flex-col items-center justify-center py-5 text-center text-stone-500">
                           <BellIcon />
                           <p className="mt-1.5 text-xs italic">
                             Tidak ada notifikasi refund
@@ -657,13 +759,13 @@ export function HomeHeader() {
                             href={`/refund/${r.id}`}
                             key={r.id}
                             onClick={() => handleCheckNotif(`refund-${r.id}`)}
-                            className={`flex items-center gap-3 px-4 py-3 border-b border-stone-100 cursor-pointer transition-all ${
+                            className={`flex items-center gap-3 px-4 py-3 border-b border-stone-700 cursor-pointer transition-all ${
                               isRead
-                                ? "opacity-50 hover:opacity-80 hover:bg-stone-50"
-                                : "border-l-4 border-l-red-400 hover:bg-red-50/30"
+                                ? "opacity-40 hover:opacity-60 hover:bg-stone-800/40"
+                                : "border-l-4 border-l-red-400 hover:bg-red-900/20"
                             }`}
                           >
-                            <div className="w-9 h-9 flex items-center justify-center rounded-xl bg-red-50 border border-red-100 shrink-0">
+                            <div className="w-9 h-9 flex items-center justify-center rounded-xl bg-red-900/40 border border-red-800/50 shrink-0">
                               <svg
                                 className="w-4 h-4 text-red-400"
                                 fill="none"
@@ -679,18 +781,18 @@ export function HomeHeader() {
                               </svg>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-semibold text-stone-800">
+                              <p className="text-xs font-semibold text-stone-100">
                                 Pengembalian dana diajukan
                               </p>
-                              <p className="text-[11px] text-stone-500 truncate">
+                              <p className="text-[11px] text-stone-400 truncate">
                                 {r.order_name}
                               </p>
                               {r.admin_note && (
-                                <p className="text-[11px] text-red-500 mt-0.5 line-clamp-1">
+                                <p className="text-[11px] text-red-400 mt-0.5 line-clamp-1">
                                   {r.admin_note}
                                 </p>
                               )}
-                              <p className="text-[10px] text-stone-400 mt-0.5">
+                              <p className="text-[10px] text-stone-500 mt-0.5">
                                 {new Date(r.created_at).toLocaleString("id-ID")}
                               </p>
                             </div>
@@ -702,18 +804,18 @@ export function HomeHeader() {
                       })}
 
                       {/* ── Section: Dana Ditransfer (status "transferred") ── */}
-                      <div className="px-4 py-2 flex items-center gap-2 border-b border-stone-100 bg-blue-50/40">
+                      <div className="px-4 py-2 flex items-center gap-2 border-b border-stone-700 bg-blue-900/20">
                         <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
-                        <p className="text-[10px] font-semibold text-blue-800 uppercase tracking-wider">
+                        <p className="text-[10px] font-semibold text-blue-400 uppercase tracking-wider">
                           Dana Ditransfer
                         </p>
-                        <span className="ml-auto text-[10px] font-semibold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">
+                        <span className="ml-auto text-[10px] font-semibold text-blue-300 bg-blue-900/50 px-2 py-0.5 rounded-full">
                           {unreadTransferred.length}
                         </span>
                       </div>
 
                       {transferredRefunds.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-5 text-center text-stone-400">
+                        <div className="flex flex-col items-center justify-center py-5 text-center text-stone-500">
                           <BellIcon />
                           <p className="mt-1.5 text-xs italic">
                             Tidak ada dana yang ditransfer
@@ -732,15 +834,15 @@ export function HomeHeader() {
                             onClick={() =>
                               handleCheckNotif(`transferred-${r.id}`)
                             }
-                            className={`flex items-center gap-3 px-4 py-3 border-b border-stone-100 cursor-pointer transition-all ${
+                            className={`flex items-center gap-3 px-4 py-3 border-b border-stone-700 cursor-pointer transition-all ${
                               isRead
-                                ? "opacity-50 hover:opacity-80 hover:bg-stone-50"
-                                : "border-l-4 border-l-blue-400 hover:bg-blue-50/30"
+                                ? "opacity-40 hover:opacity-60 hover:bg-stone-800/40"
+                                : "border-l-4 border-l-blue-400 hover:bg-blue-900/20"
                             }`}
                           >
-                            <div className="w-9 h-9 flex items-center justify-center rounded-xl bg-blue-50 border border-blue-100 shrink-0">
+                            <div className="w-9 h-9 flex items-center justify-center rounded-xl bg-blue-900/40 border border-blue-800/50 shrink-0">
                               <svg
-                                className="w-4 h-4 text-blue-500"
+                                className="w-4 h-4 text-blue-400"
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth={1.8}
@@ -754,18 +856,18 @@ export function HomeHeader() {
                               </svg>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-semibold text-stone-800">
+                              <p className="text-xs font-semibold text-stone-100">
                                 Dana sudah ditransfer
                               </p>
-                              <p className="text-[11px] text-stone-500 truncate">
+                              <p className="text-[11px] text-stone-400 truncate">
                                 {r.order_name}
                               </p>
                               {r.admin_note && (
-                                <p className="text-[11px] text-blue-500 mt-0.5 line-clamp-1">
+                                <p className="text-[11px] text-blue-400 mt-0.5 line-clamp-1">
                                   {r.admin_note}
                                 </p>
                               )}
-                              <p className="text-[10px] text-stone-400 mt-0.5">
+                              <p className="text-[10px] text-stone-500 mt-0.5">
                                 {new Date(r.created_at).toLocaleString("id-ID")}
                               </p>
                             </div>
@@ -777,18 +879,18 @@ export function HomeHeader() {
                       })}
 
                       {/* ── Section: Pesanan Selesai ── */}
-                      <div className="px-4 py-2 flex items-center gap-2 border-b border-stone-100 bg-green-50/40">
+                      <div className="px-4 py-2 flex items-center gap-2 border-b border-stone-700 bg-green-900/20">
                         <span className="w-2 h-2 rounded-full bg-green-400 shrink-0" />
-                        <p className="text-[10px] font-semibold text-green-800 uppercase tracking-wider">
+                        <p className="text-[10px] font-semibold text-green-400 uppercase tracking-wider">
                           Pesanan Selesai
                         </p>
-                        <span className="ml-auto text-[10px] font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+                        <span className="ml-auto text-[10px] font-semibold text-green-300 bg-green-900/50 px-2 py-0.5 rounded-full">
                           {unreadFinished.length}
                         </span>
                       </div>
 
                       {finishedOrders.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-5 text-center text-stone-400">
+                        <div className="flex flex-col items-center justify-center py-5 text-center text-stone-500">
                           <BellIcon />
                           <p className="mt-1.5 text-xs italic">
                             Tidak ada pesanan selesai
@@ -805,15 +907,15 @@ export function HomeHeader() {
                             href={`/order/${o.order_code.code}`}
                             key={o.id}
                             onClick={() => handleCheckNotif(`finished-${o.id}`)}
-                            className={`flex items-center gap-3 px-4 py-3 border-b border-stone-100 cursor-pointer transition-all ${
+                            className={`flex items-center gap-3 px-4 py-3 border-b border-stone-700 cursor-pointer transition-all ${
                               isRead
-                                ? "opacity-50 hover:opacity-80 hover:bg-stone-50"
-                                : "border-l-4 border-l-green-400 hover:bg-green-50/30"
+                                ? "opacity-40 hover:opacity-60 hover:bg-stone-800/40"
+                                : "border-l-4 border-l-green-400 hover:bg-green-900/20"
                             }`}
                           >
-                            <div className="w-9 h-9 flex items-center justify-center rounded-xl bg-green-50 border border-green-100 shrink-0">
+                            <div className="w-9 h-9 flex items-center justify-center rounded-xl bg-green-900/40 border border-green-800/50 shrink-0">
                               <svg
-                                className="w-4 h-4 text-green-500"
+                                className="w-4 h-4 text-green-400"
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth={1.8}
@@ -827,13 +929,13 @@ export function HomeHeader() {
                               </svg>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-semibold text-stone-800">
+                              <p className="text-xs font-semibold text-stone-100">
                                 Pesanan selesai
                               </p>
-                              <p className="text-[11px] text-stone-500 truncate">
+                              <p className="text-[11px] text-stone-400 truncate">
                                 {o.service_name_snapshot}
                               </p>
-                              <p className="text-[10px] text-stone-400 mt-0.5">
+                              <p className="text-[10px] text-stone-500 mt-0.5">
                                 {o.created_at
                                   ? new Date(o.created_at).toLocaleString(
                                       "id-ID",
@@ -857,13 +959,13 @@ export function HomeHeader() {
           <>
             <Link
               href="/auth/login"
-              className="font-monterat-tipis text-sm font-semibold text-stone-600 hover:text-stone-800 px-3 py-2 rounded-xl hover:bg-white/80 transition-colors"
+              className="font-monterat-tipis text-sm font-semibold text-stone-300 hover:text-stone-100 px-3 py-2 rounded-xl hover:bg-stone-800/60 transition-colors"
             >
               Masuk
             </Link>
             <Link
               href="/auth"
-              className="font-barlow-bold text-sm font-semibold text-stone-900 bg-stone-900 text-white px-4 py-2 rounded-xl hover:bg-stone-800 active:scale-[0.98] transition-all"
+              className="font-barlow-bold text-sm font-semibold bg-stone-100 text-stone-900 px-4 py-2 rounded-xl hover:bg-white active:scale-[0.98] transition-all"
             >
               Daftar
             </Link>
