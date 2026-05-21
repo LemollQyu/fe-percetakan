@@ -1,63 +1,62 @@
+import Link from "next/link";
 import { getCategoriesList } from "@/api/jasa/categories";
 import type { CategoryJasa } from "@/api/jasa/categories";
 
 export const dynamic = "force-dynamic";
-/** URL icon kategori: konversi ke path relatif untuk proxy Next.js */
+
 function normalizeIconUrl(url: string): string {
   if (!url || typeof url !== "string") return url;
-  let t = url.trim();
-
-  // Jika sudah path relatif yang dimulai dengan /static/, langsung return
+  const t = url.trim();
   if (t.startsWith("/static/")) return t;
-
-  // Jika URL lengkap dengan http:// atau https://, ekstrak bagian /static/...
   if (t.startsWith("http://") || t.startsWith("https://")) {
-    const staticIndex = t.indexOf("/static/");
-    if (staticIndex !== -1) {
-      return t.substring(staticIndex);
-    }
+    const idx = t.indexOf("/static/");
+    if (idx !== -1) return t.substring(idx);
+    return t;
   }
-
-  // Jika mengandung localhost:8081/static/ atau format serupa, ekstrak bagian /static/...
-  const staticIndex = t.indexOf("/static/");
-  if (staticIndex !== -1) {
-    return t.substring(staticIndex);
-  }
-
-  // Jika sudah dimulai dengan /, langsung return
+  const idx = t.indexOf("/static/");
+  if (idx !== -1) return t.substring(idx);
   if (t.startsWith("/")) return t;
-
-  // Jika tidak ada / di awal, tambahkan /static/ (asumsi path relatif dari static)
   return `/static/${t}`;
 }
 
-function CategorySkeleton() {
-  return (
-    <div className="grid gap-3 sm:grid-cols-2">
-      {[1, 2, 3, 4].map((i) => (
-        <div
-          key={i}
-          className="rounded-2xl bg-white border border-stone-100 shadow-sm shadow-stone-200/20 p-4 flex items-start gap-3 animate-pulse"
-        >
-          <div className="w-12 h-12 flex-shrink-0 rounded-xl bg-stone-200" />
-          <div className="min-w-0 flex-1 space-y-2">
-            <div className="h-4 bg-stone-200 rounded w-3/4" />
-            <div className="h-3 bg-stone-100 rounded w-1/2" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+/** Retry fetch dengan delay — aman untuk Server Component */
+async function fetchCategoriesWithRetry(
+  retries = 2,
+  delayMs = 300,
+): Promise<CategoryJasa[]> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await getCategoriesList();
+      return (res.data ?? []).filter((c) => c.is_active);
+    } catch (err) {
+      const isLastAttempt = attempt === retries;
+      if (isLastAttempt) {
+        console.error(
+          `[CategoriesSection] Gagal setelah ${retries + 1}x percobaan:`,
+          err,
+        );
+        throw err;
+      }
+      console.warn(
+        `[CategoriesSection] Percobaan ${attempt + 1} gagal, retry dalam ${delayMs}ms...`,
+      );
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
+  }
+  return [];
 }
 
 export async function CategoriesSection() {
   let categories: CategoryJasa[] = [];
+  let fetchError = false;
 
   try {
-    const res = await getCategoriesList();
-    categories = (res.data ?? []).filter((c) => c.is_active);
-  } catch (error) {
-    console.error("Error fetching categories:", error);
+    categories = await fetchCategoriesWithRetry();
+  } catch {
+    fetchError = true;
+  }
+
+  if (fetchError) {
     return (
       <p className="font-monterat-tipis text-sm text-red-500 py-4">
         Gagal memuat kategori.
@@ -76,7 +75,7 @@ export async function CategoriesSection() {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {categories.map((cat) => (
-        <a
+        <Link
           key={cat.id}
           href={`/category/${cat.slug}`}
           className="rounded-2xl bg-white border border-stone-100 shadow-sm shadow-stone-200/20 p-4 hover:border-stone-200 hover:shadow-stone-200/30 transition-all flex items-start gap-3 cursor-pointer"
@@ -104,7 +103,7 @@ export async function CategoriesSection() {
               </p>
             ) : null}
           </div>
-        </a>
+        </Link>
       ))}
     </div>
   );
