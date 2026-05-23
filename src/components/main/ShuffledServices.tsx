@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import type { ServiceJasa } from "@/api/jasa/services/types";
 
 function normalizeMediaUrl(url: string): string {
@@ -94,12 +94,11 @@ function ServiceCard({ service }: { service: ServiceJasa }) {
 }
 
 export function ShuffledServices({ services }: { services: ServiceJasa[] }) {
-  // useMemo dengan [] agar shuffle hanya terjadi sekali saat mount di client
-  // Ini aman dari hydration mismatch karena random tidak pernah dijalankan di server
-  const shuffled = useMemo(
-    () => [...services].sort(() => Math.random() - 0.5),
-    [], // eslint-disable-line react-hooks/exhaustive-deps
-  );
+  const [shuffled, setShuffled] = useState<ServiceJasa[]>(services); // server render urutan asli
+
+  useEffect(() => {
+    setShuffled([...services].sort(() => Math.random() - 0.5)); // shuffle hanya di client
+  }, [services]);
 
   return (
     <div className="space-y-2.5">

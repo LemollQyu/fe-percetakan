@@ -14,6 +14,7 @@ import type { PaymentProof } from "@/api/payment";
 import { toStaticUrl } from "@/app/helper/normalizeUrl";
 import Link from "next/link";
 import { formatDuration } from "@/app/helper/formatDuration";
+import WhatsAppWidget from "@/components/WhatsappWidget";
 
 // ─── Status config ────────────────────────────────────────────────────────────
 
@@ -830,7 +831,6 @@ export default function OrderDetailPage() {
           </span>
         </div>
       </div>
-
       <div className="space-y-3">
         {/* Info Order */}
         <div className="rounded-[20px] bg-white border border-stone-100 shadow-sm overflow-hidden">
@@ -1621,6 +1621,13 @@ export default function OrderDetailPage() {
           </>
         )}
       </div>
+      {(order.status === "Paid" || order.status === "On_progress") && (
+        <WhatsAppWidget
+          code={order.order_code.code}
+          name={order.user.name}
+          layanan={order.service_name_snapshot}
+        />
+      )}
     </main>
   );
 }

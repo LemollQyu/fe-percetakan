@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getToken } from "@/lib/auth";
 import { getCategoriesList, type CategoryJasa } from "@/api/jasa/categories";

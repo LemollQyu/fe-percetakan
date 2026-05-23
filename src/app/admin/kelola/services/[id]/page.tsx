@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import { getToken } from "@/lib/auth";
 import {
@@ -26,10 +27,16 @@ import ConfirmDeleteServiceModal from "@/components/admin/ConfirmDeleteServiceMo
 function normalizeMediaUrl(url: string): string {
   if (!url || typeof url !== "string") return url;
   const t = url.trim();
-  if (t.startsWith("http://") || t.startsWith("https://")) return t;
-  const base = process.env.NEXT_PUBLIC_API_JASA_URL ?? "http://localhost:8081";
-  if (t.startsWith("localhost")) return "http://" + t;
-  return t.startsWith("/") ? `${base}${t}` : `${base}/${t}`;
+  if (t.startsWith("http://") || t.startsWith("https://")) {
+    const idx = t.indexOf("/static/");
+    if (idx !== -1) return t.substring(idx);
+    return t;
+  }
+  if (t.startsWith("/static/")) return t;
+  const idx = t.indexOf("/static/");
+  if (idx !== -1) return t.substring(idx);
+  if (t.startsWith("static/")) return `/${t}`;
+  return t.startsWith("/") ? t : `/${t}`;
 }
 
 export default function AdminServiceDetailPage() {
@@ -402,7 +409,7 @@ export default function AdminServiceDetailPage() {
           <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4">
             <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-stone-200 overflow-hidden">
               {thumb?.url ? (
-                <img
+                <Image
                   src={normalizeMediaUrl(thumb.url)}
                   alt=""
                   className="w-full h-full object-cover"
@@ -967,7 +974,7 @@ export default function AdminServiceDetailPage() {
                 <div className="w-28 h-28 flex-shrink-0 rounded-2xl border-2 border-dashed border-stone-200 bg-stone-50/80 overflow-hidden flex items-center justify-center">
                   {iconMedia ? (
                     <div className="relative w-full h-full group">
-                      <img
+                      <Image
                         src={normalizeMediaUrl(iconMedia.url)}
                         alt="Icon"
                         className="w-full h-full object-contain"
@@ -1032,7 +1039,7 @@ export default function AdminServiceDetailPage() {
                     >
                       {t ? (
                         <div className="relative w-full h-full group">
-                          <img
+                          <Image
                             src={normalizeMediaUrl(t.url)}
                             alt={`Thumbnail ${i + 1}`}
                             className="w-full h-full object-cover"
@@ -1132,7 +1139,7 @@ export default function AdminServiceDetailPage() {
                     key={m.id}
                     className="w-32 h-32 flex-shrink-0 rounded-2xl border border-stone-200 bg-stone-50/80 overflow-hidden relative group"
                   >
-                    <img
+                    <Image
                       src={normalizeMediaUrl(m.url)}
                       alt="Gallery"
                       className="w-full h-full object-cover"
