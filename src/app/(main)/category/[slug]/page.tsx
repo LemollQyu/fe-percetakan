@@ -4,6 +4,8 @@ import { getCategoriesList, getCategoryById } from "@/api/jasa/categories";
 import type { CategoryJasaDetail } from "@/api/jasa/categories/types";
 import { ServicePaginatedGrid } from "@/components/main/ServicePaginationGrid";
 
+export const dynamic = "force-dynamic";
+
 /** URL icon kategori: konversi ke path relatif untuk proxy Next.js */
 function normalizeIconUrl(url: string): string {
   if (!url || typeof url !== "string") return url;
