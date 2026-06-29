@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { getCategoriesList, getCategoryById } from "@/api/jasa/categories";
+import { getServicesByCategory } from "@/api/jasa/services";
 import type { CategoryJasaDetail } from "@/api/jasa/categories/types";
 import { ServicePaginatedGrid } from "@/components/main/ServicePaginationGrid";
 
@@ -139,7 +140,14 @@ async function CategoryDetail({ slug }: { slug: string }) {
     );
   }
 
-  const services = (category.service ?? []).filter((s) => s.is_active === true);
+  // Fetch services berdasarkan category dari endpoint baru
+  let services: NonNullable<CategoryJasaDetail["service"]> = [];
+  try {
+    const servicesRes = await getServicesByCategory(categoryId, { limit: 100 });
+    services = (servicesRes.data ?? []).filter((s) => s.is_active === true);
+  } catch (error) {
+    console.error("Error fetching services by category:", error);
+  }
 
   return (
     <div className="space-y-6">

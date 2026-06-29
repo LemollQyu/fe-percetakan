@@ -1,4 +1,5 @@
 export { getServicesList } from "./getList";
+export { getServicesByCategory } from "./getServiceListByCategoty";
 export { getServiceById } from "./getOne";
 export { createService } from "./create";
 export { updateServiceStatus } from "./updateStatus";
@@ -30,3 +31,4 @@ export type {
 } from "./types";
 export type { CreateServiceForm, CreateServiceResponse } from "./create";
 export type { AddServiceMediaType } from "./addMedia";
+export type { GetServicesByCategoryParams } from "./getServiceListByCategoty";
