@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { CategoryJasa } from "@/api/jasa/categories";
 import type { ServiceJasa, ServiceMedia } from "@/api/jasa/services";
+import Image from "next/image";
 
 function normalizeMediaUrl(url: string): string {
   if (!url || typeof url !== "string") return url;
@@ -87,7 +88,7 @@ export function ServiceList({
                               "";
                             return (
                               <div className="w-12 h-12 sm:w-20 sm:h-20 rounded-lg sm:rounded-xl bg-stone-200 overflow-hidden">
-                                <img
+                                <Image
                                   src={normalizeMediaUrl(url)}
                                   alt=""
                                   className="w-full h-full object-cover"
