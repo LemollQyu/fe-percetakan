@@ -47,11 +47,15 @@ async function fetchCategoriesWithRetry(
 }
 
 export async function CategoriesSection() {
+  // let categories: CategoryJasa[] = [];
+  // let fetchError = false;
+
   let categories: CategoryJasa[] = [];
   let fetchError = false;
 
   try {
-    categories = await fetchCategoriesWithRetry();
+    const res = await getCategoriesList();
+    categories = (res.data ?? []).filter((c) => c.is_active);
   } catch {
     fetchError = true;
   }
