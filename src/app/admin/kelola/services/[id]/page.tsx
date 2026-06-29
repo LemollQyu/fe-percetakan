@@ -24,29 +24,19 @@ import {
 import { updateServiceEstimate } from "@/api/jasa/services";
 import ConfirmDeleteServiceModal from "@/components/admin/ConfirmDeleteServiceModal";
 
-// function normalizeMediaUrl(url: string): string {
-//   if (!url || typeof url !== "string") return url;
-//   const t = url.trim();
-//   if (t.startsWith("http://") || t.startsWith("https://")) {
-//     const idx = t.indexOf("/static/");
-//     if (idx !== -1) return t.substring(idx);
-//     return t;
-//   }
-//   if (t.startsWith("/static/")) return t;
-//   const idx = t.indexOf("/static/");
-//   if (idx !== -1) return t.substring(idx);
-//   if (t.startsWith("static/")) return `/${t}`;
-//   return t.startsWith("/") ? t : `/${t}`;
-// }
-
 function normalizeMediaUrl(url: string): string {
   if (!url || typeof url !== "string") return url;
   const t = url.trim();
-  if (t.startsWith("http://") || t.startsWith("https://")) return t;
-  const base = process.env.NEXT_PUBLIC_API_JASA_URL ?? "http://localhost:8081";
-  // Backend bisa return "localhost:8081/path" tanpa scheme → tambah http:// saja, jangan base
-  if (t.startsWith("localhost")) return "http://" + t;
-  return t.startsWith("/") ? `${base}${t}` : `${base}/${t}`;
+  if (t.startsWith("http://") || t.startsWith("https://")) {
+    const idx = t.indexOf("/static/");
+    if (idx !== -1) return t.substring(idx);
+    return t;
+  }
+  if (t.startsWith("/static/")) return t;
+  const idx = t.indexOf("/static/");
+  if (idx !== -1) return t.substring(idx);
+  if (t.startsWith("static/")) return `/${t}`;
+  return t.startsWith("/") ? t : `/${t}`;
 }
 
 export default function AdminServiceDetailPage() {
