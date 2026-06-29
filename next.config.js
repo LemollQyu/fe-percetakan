@@ -50,6 +50,12 @@ const nextConfig = {
         hostname: "**.trycloudflare.com",
         pathname: "/static/**",
       },
+      // next.config.js - sudah ada ini, tapi pastikan ada:
+      {
+        protocol: "https",
+        hostname: "**.trycloudflare.com",
+        pathname: "/static/**",
+      },
     ],
   },
 

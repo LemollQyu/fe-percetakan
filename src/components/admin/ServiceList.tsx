@@ -3,14 +3,37 @@ import type { CategoryJasa } from "@/api/jasa/categories";
 import type { ServiceJasa, ServiceMedia } from "@/api/jasa/services";
 import Image from "next/image";
 
+// function normalizeMediaUrl(url: string): string {
+//   if (!url || typeof url !== "string") return url;
+//   const t = url.trim();
+//   if (t.startsWith("http://") || t.startsWith("https://")) return t;
+//   const base = process.env.NEXT_PUBLIC_API_JASA_URL ?? "http://localhost:8081";
+//   // Backend bisa return "localhost:8081/path" tanpa scheme → tambah http:// saja, jangan base
+//   if (t.startsWith("localhost")) return "http://" + t;
+//   return t.startsWith("/") ? `${base}${t}` : `${base}/${t}`;
+// }
+
 function normalizeMediaUrl(url: string): string {
   if (!url || typeof url !== "string") return url;
   const t = url.trim();
-  if (t.startsWith("http://") || t.startsWith("https://")) return t;
-  const base = process.env.NEXT_PUBLIC_API_JASA_URL ?? "http://localhost:8081";
-  // Backend bisa return "localhost:8081/path" tanpa scheme → tambah http:// saja, jangan base
-  if (t.startsWith("localhost")) return "http://" + t;
-  return t.startsWith("/") ? `${base}${t}` : `${base}/${t}`;
+
+  if (t.startsWith("/")) return t;
+
+  try {
+    const parsed = new URL(t.startsWith("localhost") ? "http://" + t : t);
+
+    if (parsed.hostname === "localhost") {
+      // Ganti localhost dengan base URL yang benar dari env
+      const base =
+        process.env.NEXT_PUBLIC_API_JASA_URL?.replace(/\/$/, "") ??
+        "http://localhost:8081";
+      return `${base}${parsed.pathname}`;
+    }
+
+    return t;
+  } catch {
+    return t;
+  }
 }
 
 type ServiceListProps = {
