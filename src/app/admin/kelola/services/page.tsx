@@ -53,12 +53,30 @@ export default function AdminServicesPage() {
     null,
   );
 
+  // const fetchList = useCallback(async () => {
+  //   setLoading(true);
+  //   setError(null);
+  //   try {
+  //     const [servicesRes, categoriesRes] = await Promise.all([
+  //       getServicesList(),
+  //       getCategoriesList(),
+  //     ]);
+  //     setList(servicesRes.data ?? []);
+  //     setCategories(categoriesRes.data ?? []);
+  //   } catch (e) {
+  //     setError(e instanceof Error ? e.message : "Gagal memuat data.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, []);
+
+  // Di fetchList di page.tsx
   const fetchList = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const [servicesRes, categoriesRes] = await Promise.all([
-        getServicesList(),
+        getServicesList({ limit: 1000 }),
         getCategoriesList(),
       ]);
       setList(servicesRes.data ?? []);
