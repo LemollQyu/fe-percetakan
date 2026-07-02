@@ -1167,10 +1167,10 @@ export default function OrderDetailPage() {
                     </div>
                     <div className="text-center">
                       <p className="text-[13px] font-bold text-stone-900">
-                        Manual
+                        Transfer
                       </p>
                       <p className="text-[10px] text-stone-400 mt-0.5">
-                        Transfer & e-wallet
+                        Bank & E-wallet
                       </p>
                     </div>
                   </button>
